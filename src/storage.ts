@@ -178,6 +178,16 @@ export function loadData(): AppData {
   return data;
 }
 
+export function calculateTotalXp(history: Record<string, DayStats>, liveXpGained?: number): number {
+  const total = Object.values(history).reduce((sum, day) => sum + (day.xpGained ?? 0), 0);
+  if (liveXpGained !== undefined) {
+    const todayKey = new Date().toDateString();
+    const snapshotXp = history[todayKey]?.xpGained ?? 0;
+    return total - snapshotXp + liveXpGained;
+  }
+  return total;
+}
+
 export function saveData(data: AppData): void {
   data.level = calculateLevel(data.xp);
   data.updatedAt = new Date().toISOString();
@@ -251,6 +261,7 @@ export async function loadFromCloud(username: string): Promise<AppData | null> {
   console.log("[storage] loadFromCloud: not configured — would fetch for", username);
   return null;
 }
+
 
 
 

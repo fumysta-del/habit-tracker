@@ -6,6 +6,7 @@ import {
   loadData,
   saveData,
   syncToSupabase,
+  calculateTotalXp,
   DEFAULT_USERNAME,
   type Task,
   type MinimalRecord,
@@ -52,18 +53,6 @@ const TIME_CATEGORIES = [
 // ── Helpers ──
 function getTaskXp(text: string): number {
   return TASK_XP_MAP[text] ?? CUSTOM_TASK_XP;
-}
-
-function getLevelInfo(totalXp: number) {
-  let level = 1;
-  let xpForNext = 100;
-  let remaining = totalXp;
-  while (remaining >= xpForNext) {
-    remaining -= xpForNext;
-    level++;
-    xpForNext = 100 * level;
-  }
-  return { level, currentXp: remaining, xpForNext };
 }
 
 function formatTime(iso: string) {
@@ -386,8 +375,10 @@ function App() {
   // ── Derived: UI ──
   const completedCount = todayStats.completedTasks;
   const totalCount = tasks.length;
-  const { level, currentXp, xpForNext } = getLevelInfo(xp);
-  const progressPercent = Math.min((currentXp / xpForNext) * 100, 100);
+  const totalXp = calculateTotalXp(dailyStats, todayStats.xpGained);
+  const level = Math.floor(totalXp / 100) + 1;
+  const currentLevelXp = totalXp % 100;
+  const progressPercent = Math.min(currentLevelXp, 100);
 
   const historyKey = dateInputToKey(historyDate);
   const historyStats = dailyStats[historyKey] ?? null;
@@ -499,7 +490,7 @@ function App() {
           <section className="level-section">
             <div className="level-header">
               <span className="level-badge">Lv.{level}</span>
-              <span className="xp-text">{currentXp} / {xpForNext} XP</span>
+              <span className="xp-text">{currentLevelXp} / 100 XP</span>
             </div>
             <div className="xp-bar">
               <div className="xp-bar-fill" style={{ width: `${progressPercent}%` }} />
@@ -758,6 +749,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
