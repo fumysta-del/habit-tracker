@@ -203,7 +203,8 @@ export async function syncToSupabase(data: AppData): Promise<SyncResult> {
   ).padStart(2, "0")}`;
 
 
-  const todayActions = data.actions[today] ?? [];
+  const todayKey = now.toDateString();
+  const todayActions = data.actions[todayKey] ?? [];
 
 
   const { error } = await supabase
@@ -268,4 +269,5 @@ export async function loadFromCloud(username: string): Promise<AppData | null> {
   console.log("[storage] loadFromCloud: not configured — would fetch for", username);
   return null;
 }
+
 
