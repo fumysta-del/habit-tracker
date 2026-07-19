@@ -204,6 +204,20 @@ function App() {
             console.log("[cloud] Today stats row found, applying xp/energy");
             setXp(todayRow.xp ?? 0);
             setEnergy(todayRow.energy ?? "normal");
+            if (todayRow.minimal_actions > 0) {
+              const tk = new Date().toDateString();
+              const local = loadData().actions[tk] ?? [];
+              if (local.length < todayRow.minimal_actions) {
+                const missing = todayRow.minimal_actions - local.length;
+                const extra = Array.from({ length: missing }, (_, i) => ({
+                  id: Date.now() + i,
+                  action: "云端同步",
+                  timestamp: new Date(Date.now() - missing * 1000 + i * 1000).toISOString(),
+                  xp: MINIMAL_ACTION_XP,
+                }));
+                setDailyRecords(p => ({ ...p, [tk]: [...(p[tk] ?? []), ...extra] }));
+              }
+            }
           }
 
           cloudDataApplied = true;
@@ -372,9 +386,10 @@ function App() {
 
   // ── Daily stats snapshot ──
   useEffect(() => {
+    if (!cloudReady) return;
     const key = todayKey();
     setDailyStats((prev) => ({ ...prev, [key]: todayStats }));
-  }, [todayStats]);
+  }, [todayStats, cloudReady]);
 
   // ── Derived: UI ──
   const completedCount = todayStats.completedTasks;
@@ -751,3 +766,4 @@ function App() {
 }
 
 export default App;
+
