@@ -218,7 +218,6 @@ export async function syncToSupabase(data: AppData): Promise<SyncResult> {
         ).length,
 
         minimal_actions: todayActions.length,
-        actions_data: todayActions,
 
         xp: data.xp,
 
@@ -251,9 +250,7 @@ export async function syncToSupabase(data: AppData): Promise<SyncResult> {
     success:true,
     timestamp:new Date().toISOString()
   };
-}
-/** Upload local data to the cloud (future: Supabase upsert). */
-export async function syncToCloud(data: AppData): Promise<SyncResult> {
+}export async function syncToCloud(data: AppData): Promise<SyncResult> {
   // TODO: const { error } = await supabase.from("user_data").upsert({
   //   id:    data.username,
   //   data:  data,
@@ -270,6 +267,10 @@ export async function loadFromCloud(username: string): Promise<AppData | null> {
   console.log("[storage] loadFromCloud: not configured — would fetch for", username);
   return null;
 }
+
+
+
+
 
 
 
