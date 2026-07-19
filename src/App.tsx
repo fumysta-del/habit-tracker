@@ -225,7 +225,7 @@ useEffect(() => {
       .from("daily_stats")
       .select("*")
       .eq("date", today)
-      .single();
+      .maybeSingle();
 
     if (error) {
       console.log("今天暂无数据:", error.message);

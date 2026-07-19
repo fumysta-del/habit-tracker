@@ -193,28 +193,61 @@ export interface SyncResult {
   timestamp: string;
 }
 export async function syncToSupabase(data: AppData): Promise<SyncResult> {
-  const today = new Date().toISOString().split("T")[0];
+
+  const now = new Date();
+
+  const today = `${now.getFullYear()}-${String(
+    now.getMonth() + 1
+  ).padStart(2, "0")}-${String(
+    now.getDate()
+  ).padStart(2, "0")}`;
+
+
+  const todayActions = data.actions[today] ?? [];
+
+
   const { error } = await supabase
     .from("daily_stats")
-    .insert({
-      date: today,
-      energy: data.energy,
-      completed_tasks: data.tasks.filter(t => t.completed).length,
-      xp: data.xp,
-      time_minutes: data.timeRecords.length
-    });
+    .upsert(
+      {
+        date: today,
+        energy: data.energy,
+        completed_tasks: data.tasks.filter(
+          t => t.completed
+        ).length,
+
+        minimal_actions: todayActions.length,
+
+        xp: data.xp,
+
+        time_minutes: data.timeRecords.reduce(
+          (acc, item) => {
+            acc[item.type] =
+              (acc[item.type] ?? 0) + item.duration;
+            return acc;
+          },
+          {} as Record<string, number>
+        )
+      },
+      {
+        onConflict: "date"
+      }
+    );
+
 
   if (error) {
     console.error("Supabase同步失败:", error);
+
     return {
-      success: false,
-      timestamp: new Date().toISOString()
+      success:false,
+      timestamp:new Date().toISOString()
     };
   }
 
+
   return {
-    success: true,
-    timestamp: new Date().toISOString()
+    success:true,
+    timestamp:new Date().toISOString()
   };
 }
 /** Upload local data to the cloud (future: Supabase upsert). */
