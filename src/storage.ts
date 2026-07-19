@@ -202,54 +202,38 @@ export async function syncToSupabase(data: AppData): Promise<SyncResult> {
     now.getDate()
   ).padStart(2, "0")}`;
 
-
   const todayKey = now.toDateString();
   const todayActions = data.actions[todayKey] ?? [];
 
+  const timeMinutesPayload = data.timeRecords.reduce(
+    (acc, item) => {
+      acc[item.type] = (acc[item.type] ?? 0) + item.duration;
+      return acc;
+    },
+    {} as Record<string, any>
+  );
+  if (todayActions.length > 0) {
+    timeMinutesPayload["__actions"] = todayActions;
+  }
 
-  const { error } = await supabase
-    .from("daily_stats")
-    .upsert(
-      {
-        date: today,
-        energy: data.energy,
-        completed_tasks: data.tasks.filter(
-          t => t.completed
-        ).length,
-
-        minimal_actions: todayActions.length,
-
-        xp: data.xp,
-
-        time_minutes: data.timeRecords.reduce(
-          (acc, item) => {
-            acc[item.type] =
-              (acc[item.type] ?? 0) + item.duration;
-            return acc;
-          },
-          {} as Record<string, number>
-        )
-      },
-      {
-        onConflict: "date"
-      }
-    );
-
+  const { error } = await supabase.from("daily_stats").upsert(
+    {
+      date: today,
+      energy: data.energy,
+      completed_tasks: data.tasks.filter((t) => t.completed).length,
+      minimal_actions: todayActions.length,
+      xp: data.xp,
+      time_minutes: timeMinutesPayload,
+    },
+    { onConflict: "date" }
+  );
 
   if (error) {
     console.error("Supabase同步失败:", error);
-
-    return {
-      success:false,
-      timestamp:new Date().toISOString()
-    };
+    return { success: false, timestamp: new Date().toISOString() };
   }
 
-
-  return {
-    success:true,
-    timestamp:new Date().toISOString()
-  };
+  return { success: true, timestamp: new Date().toISOString() };
 }export async function syncToCloud(data: AppData): Promise<SyncResult> {
   // TODO: const { error } = await supabase.from("user_data").upsert({
   //   id:    data.username,
@@ -267,6 +251,9 @@ export async function loadFromCloud(username: string): Promise<AppData | null> {
   console.log("[storage] loadFromCloud: not configured — would fetch for", username);
   return null;
 }
+
+
+
 
 
 
