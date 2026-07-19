@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useMemo } from "react";
 import "./App.css";
 import { supabase } from "./supabase";
+(window as any).supabase = supabase;
 import {
   loadData,
   saveData,
@@ -177,6 +178,42 @@ useEffect(() => {
   };
 
   fetchTasks();
+}, []);
+// ── Load history from Supabase ──
+useEffect(() => {
+  const fetchHistory = async () => {
+    const { data, error } = await supabase
+      .from("daily_stats")
+      .select("*")
+      .order("date");
+
+    if (error) {
+      console.error("读取历史失败:", error);
+      return;
+    }
+
+    if (data) {
+      console.log("Supabase历史:", data);
+
+      const history: Record<string, DayStats> = {};
+
+      data.forEach((item) => {
+        const key = new Date(item.date).toDateString();
+
+        history[key] = {
+          completedTasks: item.completed_tasks ?? 0,
+          minimalActionCount: item.minimal_actions ?? 0,
+          xpGained: item.xp ?? 0,
+          energy: item.energy ?? "normal",
+          timeMinutes: item.time_minutes ?? {},
+        };
+      });
+
+      setDailyStats(history);
+    }
+  };
+
+  fetchHistory();
 }, []);
   // ── Unified persistence ──
   useEffect(() => {
