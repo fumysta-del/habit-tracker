@@ -218,6 +218,7 @@ export async function syncToSupabase(data: AppData): Promise<SyncResult> {
         ).length,
 
         minimal_actions: todayActions.length,
+        actions_data: todayActions,
 
         xp: data.xp,
 
@@ -269,5 +270,6 @@ export async function loadFromCloud(username: string): Promise<AppData | null> {
   console.log("[storage] loadFromCloud: not configured — would fetch for", username);
   return null;
 }
+
 
 
