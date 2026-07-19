@@ -210,10 +210,37 @@ useEffect(() => {
       });
 
       setDailyStats(history);
+      
     }
   };
 
   fetchHistory();
+}, []);
+// ── Load today stats from Supabase ──
+useEffect(() => {
+  const fetchTodayStats = async () => {
+    const today = new Date().toLocaleDateString("en-CA"); 
+
+    const { data, error } = await supabase
+      .from("daily_stats")
+      .select("*")
+      .eq("date", today)
+      .single();
+
+    if (error) {
+      console.log("今天暂无数据:", error.message);
+      return;
+    }
+
+    if (data) {
+      console.log("今日同步数据:", data);
+
+      setXp(data.xp ?? 0);
+      setEnergy(data.energy ?? "normal");
+    }
+  };
+
+  fetchTodayStats();
 }, []);
   // ── Unified persistence ──
   useEffect(() => {
