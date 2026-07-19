@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo } from "react";
+﻿import { useState, useEffect, useMemo, useRef } from "react";
 import "./App.css";
 import { supabase } from "./supabase";
 (window as any).supabase = supabase;
@@ -96,7 +96,6 @@ function calculateStreak(stats: Record<string, DayStats>): number {
   return streak;
 }
 
-// ── Weekly helpers ──
 function getLast7Days(): string[] {
   const days: string[] = [];
   const today = new Date();
@@ -132,19 +131,7 @@ function formatMinutes(totalMinutes: number): string {
 
 // ── Component ──
 function App() {
-  useEffect(() => {
-  async function testConnection() {
-    const { data, error } = await supabase
-      .from("tasks")
-      .select("*");
-
-    console.log("数据库数据:", data);
-    console.log("错误:", error);
-  }
-
-  testConnection();
-}, []);
-  // ── State ──
+  // ── State: all initialized from localStorage (fast fallback) ──
   const [tasks, setTasks] = useState<Task[]>(() => loadData().tasks);
   const [xp, setXp] = useState(() => loadData().xp);
   const [energy, setEnergy] = useState<"low" | "normal" | "high">(() => loadData().energy);
@@ -158,107 +145,126 @@ function App() {
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const [historyDate, setHistoryDate] = useState(todayStr);
-// ── Load tasks from Supabase ──
-useEffect(() => {
-  const fetchTasks = async () => {
-    const { data, error } = await supabase
-      .from("tasks")
-      .select("*")
-      .order("id");
 
-    if (error) {
-      console.error("读取任务失败:", error);
-      return;
-    }
+  // ── Cloud sync guard ──
+  const [cloudReady, setCloudReady] = useState(false);
+  const initialSyncDone = useRef(false);
 
-    if (data) {
-      console.log("Supabase任务:", data);
-      setTasks(data);
-    }
-  };
-
-  fetchTasks();
-}, []);
-// ── Load history from Supabase ──
-useEffect(() => {
-  const fetchHistory = async () => {
-    const { data, error } = await supabase
-      .from("daily_stats")
-      .select("*")
-      .order("date");
-
-    if (error) {
-      console.error("读取历史失败:", error);
-      return;
-    }
-
-    if (data) {
-      console.log("Supabase历史:", data);
-
-      const history: Record<string, DayStats> = {};
-
-      data.forEach((item) => {
-        const key = new Date(item.date).toDateString();
-
-        history[key] = {
-          completedTasks: item.completed_tasks ?? 0,
-          minimalActionCount: item.minimal_actions ?? 0,
-          xpGained: item.xp ?? 0,
-          energy: item.energy ?? "normal",
-          timeMinutes: item.time_minutes ?? {},
-        };
-      });
-
-      setDailyStats(history);
-      
-    }
-  };
-
-  fetchHistory();
-}, []);
-// ── Load today stats from Supabase ──
-useEffect(() => {
-  const fetchTodayStats = async () => {
-    const today = new Date().toLocaleDateString("en-CA"); 
-
-    const { data, error } = await supabase
-      .from("daily_stats")
-      .select("*")
-      .eq("date", today)
-      .maybeSingle();
-
-    if (error) {
-      console.log("今天暂无数据:", error.message);
-      return;
-    }
-
-    if (data) {
-      console.log("今日同步数据:", data);
-
-      setXp(data.xp ?? 0);
-      setEnergy(data.energy ?? "normal");
-    }
-  };
-
-  fetchTodayStats();
-}, []);
-  // ── Unified persistence ──
+  // ── Consolidated Supabase load (runs once on mount) ──
   useEffect(() => {
-    const newData = {
-  username: DEFAULT_USERNAME,
-  level: 0,
-  xp,
-  energy,
-  tasks,
-  actions: dailyRecords,
-  history: dailyStats,
-  timeRecords,
-  updatedAt: "",
-};
+    let cancelled = false;
 
-saveData(newData);
-syncToSupabase(newData);
-  }, [tasks, xp, energy, dailyRecords, dailyStats, timeRecords]);
+    async function initFromCloud() {
+      try {
+        console.log("[cloud] Loading data from Supabase...");
+
+        const [tasksResult, statsResult] = await Promise.all([
+          supabase.from("tasks").select("*").order("id"),
+          supabase.from("daily_stats").select("*").order("date"),
+        ]);
+
+        if (cancelled) return;
+
+        let cloudDataApplied = false;
+
+        // --- Tasks ---
+        if (tasksResult.data && tasksResult.data.length > 0) {
+          console.log("[cloud] Loaded", tasksResult.data.length, "tasks");
+          const cloudTasks: Task[] = tasksResult.data.map((t: any) => ({
+            id: t.id,
+            text: t.text,
+            completed: t.completed,
+          }));
+          setTasks(cloudTasks);
+          cloudDataApplied = true;
+        } else {
+          console.log("[cloud] No tasks in cloud, keeping localStorage");
+        }
+
+        // --- Daily stats (history) ---
+        if (statsResult.data && statsResult.data.length > 0) {
+          console.log("[cloud] Loaded", statsResult.data.length, "daily_stats records");
+          const history: Record<string, DayStats> = {};
+          for (const item of statsResult.data) {
+            const key = new Date(item.date).toDateString();
+            history[key] = {
+              completedTasks: item.completed_tasks ?? 0,
+              minimalActionCount: item.minimal_actions ?? 0,
+              xpGained: item.xp ?? 0,
+              energy: item.energy ?? "normal",
+              timeMinutes: item.time_minutes ?? {},
+            };
+          }
+          setDailyStats(history);
+
+          // Today's stats → override xp/energy
+          const todayDate = new Date().toISOString().split("T")[0];
+          const todayRow = statsResult.data.find((s: any) => s.date === todayDate);
+          if (todayRow) {
+            console.log("[cloud] Today stats row found, applying xp/energy");
+            setXp(todayRow.xp ?? 0);
+            setEnergy(todayRow.energy ?? "normal");
+          }
+
+          cloudDataApplied = true;
+        } else {
+          console.log("[cloud] No daily_stats in cloud, keeping localStorage");
+        }
+
+        // If cloud data was applied, persist to localStorage for offline
+        if (cloudDataApplied) {
+          const local = loadData();
+          saveData({
+            username: DEFAULT_USERNAME,
+            level: 0,
+            xp: local.xp,
+            energy: local.energy,
+            tasks: local.tasks,
+            actions: local.actions,
+            history: local.history,
+            timeRecords: local.timeRecords,
+            updatedAt: "",
+          });
+          console.log("[cloud] Cloud data saved to localStorage");
+        }
+      } catch (err) {
+        console.error("[cloud] Failed to load from Supabase:", err);
+      } finally {
+        if (!cancelled) {
+          console.log("[cloud] Initial load complete, enabling sync");
+          setCloudReady(true);
+        }
+      }
+    }
+
+    initFromCloud();
+    return () => { cancelled = true; };
+  }, []);
+
+  // ── Unified persistence (only after cloud data loaded) ──
+  useEffect(() => {
+    if (!cloudReady) return;
+
+    // Avoid double-sync on first mount when cloud data didn't change
+    if (!initialSyncDone.current) {
+      initialSyncDone.current = true;
+    }
+
+    const newData = {
+      username: DEFAULT_USERNAME,
+      level: 0,
+      xp,
+      energy,
+      tasks,
+      actions: dailyRecords,
+      history: dailyStats,
+      timeRecords,
+      updatedAt: "",
+    };
+
+    saveData(newData);
+    syncToSupabase(newData);
+  }, [tasks, xp, energy, dailyRecords, dailyStats, timeRecords, cloudReady]);
 
   // ── Live timer tick ──
   const [tick, setTick] = useState(0);
@@ -318,9 +324,7 @@ syncToSupabase(newData);
     const totalXp = entries.reduce((s, e) => s + (e.stat?.xpGained ?? 0), 0);
 
     const eCounts = { low: 0, normal: 0, high: 0 };
-    entries.forEach((e) => {
-      if (e.stat?.energy) eCounts[e.stat.energy]++;
-    });
+    entries.forEach((e) => { if (e.stat?.energy) eCounts[e.stat.energy]++; });
 
     let dominant = "normal" as "low" | "normal" | "high";
     let maxC = 0;
@@ -383,85 +387,36 @@ syncToSupabase(newData);
 
   // ── Handlers ──
   const addTask = async () => {
-  if (!input.trim()) return;
-
-  const newTask = {
-    id: Date.now(),
-    text: input.trim(),
-    completed: false,
+    if (!input.trim()) return;
+    const newTask = { id: Date.now(), text: input.trim(), completed: false };
+    setTasks([...tasks, newTask]);
+    const { error } = await supabase.from("tasks").insert(newTask);
+    if (error) console.error("任务保存失败:", error);
+    setInput("");
   };
 
-  setTasks([...tasks, newTask]);
-
-  const { error } = await supabase
-    .from("tasks")
-    .insert(newTask);
-
-  if (error) {
-    console.error("任务保存失败:", error);
-  }
-
-  setInput("");
-};
   const toggleTask = (id: number) => {
     setTasks((prev) => {
       const task = prev.find((t) => t.id === id);
       if (!task) return prev;
       const delta = task.completed ? -getTaskXp(task.text) : getTaskXp(task.text);
       const newCompleted = !task.completed;
-      console.log("更新任务id:", id);
-      console.log(
-  "当前状态:",
-  task.completed,
-  "准备更新:",
-  newCompleted
-);
-
-supabase
-  .from("tasks")
-  .update({
-    completed: newCompleted,
-  })
-  .eq("id", id)
-  .select()
-  .then(({ data, error }) => {
-    console.log("更新返回:", data, error);
-
-    if (error) {
-      console.error("任务更新失败:", error);
-    }
-  });
+      supabase.from("tasks").update({ completed: newCompleted }).eq("id", id)
+        .then(({ error }) => { if (error) console.error("任务更新失败:", error); });
       setXp((p) => Math.max(0, p + delta));
-      return prev.map((t) =>
-  t.id === id ? { ...t, completed: newCompleted } : t
-);
+      return prev.map((t) => t.id === id ? { ...t, completed: newCompleted } : t);
     });
   };
 
   const deleteTask = (id: number) => {
-    console.log("准备删除任务:", id);
-  setTasks((prev) => {
-    const task = prev.find((t) => t.id === id);
-
-    supabase
-  .from("tasks")
-  .delete()
-  .eq("id", id)
-  .then(({ data, error }) => {
-    console.log("删除返回:", data, error);
-
-    if (error) {
-      console.error("任务删除失败:", error);
-    }
-  });
-
-    if (task?.completed) {
-      setXp((p) => Math.max(0, p - getTaskXp(task.text)));
-    }
-
-    return prev.filter((t) => t.id !== id);
-  });
-};
+    setTasks((prev) => {
+      const task = prev.find((t) => t.id === id);
+      supabase.from("tasks").delete().eq("id", id)
+        .then(({ error }) => { if (error) console.error("任务删除失败:", error); });
+      if (task?.completed) setXp((p) => Math.max(0, p - getTaskXp(task.text)));
+      return prev.filter((t) => t.id !== id);
+    });
+  };
 
   const doMinimalAction = (action: string) => {
     const now = new Date();
