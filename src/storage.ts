@@ -1,4 +1,5 @@
-﻿// ── Centralized Storage for 行动力助手 ──
+﻿import { supabase } from "./supabase";
+// ── Centralized Storage for 行动力助手 ──
 // All localStorage operations go through this module.
 // Prepares for future Supabase migration: swap loadData/saveData
 // with Supabase client calls without touching the component.
@@ -191,7 +192,31 @@ export interface SyncResult {
   success: boolean;
   timestamp: string;
 }
+export async function syncToSupabase(data: AppData): Promise<SyncResult> {
+  const today = new Date().toISOString().split("T")[0];
+  const { error } = await supabase
+    .from("daily_stats")
+    .insert({
+      date: today,
+      energy: data.energy,
+      completed_tasks: data.tasks.filter(t => t.completed).length,
+      xp: data.xp,
+      time_minutes: data.timeRecords.length
+    });
 
+  if (error) {
+    console.error("Supabase同步失败:", error);
+    return {
+      success: false,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  return {
+    success: true,
+    timestamp: new Date().toISOString()
+  };
+}
 /** Upload local data to the cloud (future: Supabase upsert). */
 export async function syncToCloud(data: AppData): Promise<SyncResult> {
   // TODO: const { error } = await supabase.from("user_data").upsert({

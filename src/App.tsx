@@ -1,8 +1,10 @@
 ﻿import { useState, useEffect, useMemo } from "react";
 import "./App.css";
+import { supabase } from "./supabase";
 import {
   loadData,
   saveData,
+  syncToSupabase,
   DEFAULT_USERNAME,
   type Task,
   type MinimalRecord,
@@ -129,6 +131,18 @@ function formatMinutes(totalMinutes: number): string {
 
 // ── Component ──
 function App() {
+  useEffect(() => {
+  async function testConnection() {
+    const { data, error } = await supabase
+      .from("tasks")
+      .select("*");
+
+    console.log("数据库数据:", data);
+    console.log("错误:", error);
+  }
+
+  testConnection();
+}, []);
   // ── State ──
   const [tasks, setTasks] = useState<Task[]>(() => loadData().tasks);
   const [xp, setXp] = useState(() => loadData().xp);
@@ -143,20 +157,43 @@ function App() {
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const [historyDate, setHistoryDate] = useState(todayStr);
+// ── Load tasks from Supabase ──
+useEffect(() => {
+  const fetchTasks = async () => {
+    const { data, error } = await supabase
+      .from("tasks")
+      .select("*")
+      .order("id");
 
+    if (error) {
+      console.error("读取任务失败:", error);
+      return;
+    }
+
+    if (data) {
+      console.log("Supabase任务:", data);
+      setTasks(data);
+    }
+  };
+
+  fetchTasks();
+}, []);
   // ── Unified persistence ──
   useEffect(() => {
-    saveData({
-      username: DEFAULT_USERNAME,
-      level: 0,
-      xp,
-      energy,
-      tasks,
-      actions: dailyRecords,
-      history: dailyStats,
-      timeRecords,
-      updatedAt: "",
-    });
+    const newData = {
+  username: DEFAULT_USERNAME,
+  level: 0,
+  xp,
+  energy,
+  tasks,
+  actions: dailyRecords,
+  history: dailyStats,
+  timeRecords,
+  updatedAt: "",
+};
+
+saveData(newData);
+syncToSupabase(newData);
   }, [tasks, xp, energy, dailyRecords, dailyStats, timeRecords]);
 
   // ── Live timer tick ──
@@ -281,29 +318,86 @@ function App() {
   const historyStats = dailyStats[historyKey] ?? null;
 
   // ── Handlers ──
-  const addTask = () => {
-    if (!input.trim()) return;
-    setTasks([...tasks, { id: Date.now(), text: input.trim(), completed: false }]);
-    setInput("");
+  const addTask = async () => {
+  if (!input.trim()) return;
+
+  const newTask = {
+    id: Date.now(),
+    text: input.trim(),
+    completed: false,
   };
 
+  setTasks([...tasks, newTask]);
+
+  const { error } = await supabase
+    .from("tasks")
+    .insert(newTask);
+
+  if (error) {
+    console.error("任务保存失败:", error);
+  }
+
+  setInput("");
+};
   const toggleTask = (id: number) => {
     setTasks((prev) => {
       const task = prev.find((t) => t.id === id);
       if (!task) return prev;
       const delta = task.completed ? -getTaskXp(task.text) : getTaskXp(task.text);
+      const newCompleted = !task.completed;
+      console.log("更新任务id:", id);
+      console.log(
+  "当前状态:",
+  task.completed,
+  "准备更新:",
+  newCompleted
+);
+
+supabase
+  .from("tasks")
+  .update({
+    completed: newCompleted,
+  })
+  .eq("id", id)
+  .select()
+  .then(({ data, error }) => {
+    console.log("更新返回:", data, error);
+
+    if (error) {
+      console.error("任务更新失败:", error);
+    }
+  });
       setXp((p) => Math.max(0, p + delta));
-      return prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t));
+      return prev.map((t) =>
+  t.id === id ? { ...t, completed: newCompleted } : t
+);
     });
   };
 
   const deleteTask = (id: number) => {
-    setTasks((prev) => {
-      const task = prev.find((t) => t.id === id);
-      if (task?.completed) setXp((p) => Math.max(0, p - getTaskXp(task.text)));
-      return prev.filter((t) => t.id !== id);
-    });
-  };
+    console.log("准备删除任务:", id);
+  setTasks((prev) => {
+    const task = prev.find((t) => t.id === id);
+
+    supabase
+  .from("tasks")
+  .delete()
+  .eq("id", id)
+  .then(({ data, error }) => {
+    console.log("删除返回:", data, error);
+
+    if (error) {
+      console.error("任务删除失败:", error);
+    }
+  });
+
+    if (task?.completed) {
+      setXp((p) => Math.max(0, p - getTaskXp(task.text)));
+    }
+
+    return prev.filter((t) => t.id !== id);
+  });
+};
 
   const doMinimalAction = (action: string) => {
     const now = new Date();
