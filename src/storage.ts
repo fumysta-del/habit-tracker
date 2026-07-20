@@ -173,20 +173,23 @@ export async function syncToSupabase(data: AppData): Promise<SyncResult> {
   }, {} as Record<string, any>);
   if (todayActions.length > 0) timeMinutesPayload["__actions"] = todayActions;
 
-  const { error } = await supabase.from("daily_stats").upsert({
+    const payload = {
     date: today,
     energy: data.energy,
     completed_tasks: todayTaskCompletions.filter((r) => r.completed).length,
     minimal_actions: todayActions.length,
     xp: data.xp,
     time_minutes: timeMinutesPayload,
-  }, { onConflict: "date" });
+  };
+  console.log("[SYNC] Upserting daily_stats:", JSON.stringify({ date: payload.date, xp: payload.xp, tasks: payload.completed_tasks, actions: payload.minimal_actions }));
+  const { error } = await supabase.from("daily_stats").upsert(payload, { onConflict: "date" });
 
   if (error) {
-    console.error("Supabase同步失败:", error);
+    console.error("[SYNC] Upsert failed:", error);
     return { success: false, timestamp: new Date().toISOString() };
   }
-  return { success: true, timestamp: new Date().toISOString() };
+  console.log("[SYNC] Upsert successful for", today, "xp:", data.xp);
+  return { success: true, timestamp: new Date().toISOString() };return { success: true, timestamp: new Date().toISOString() };
 }
 
 export async function syncToCloud(data: AppData): Promise<SyncResult> {

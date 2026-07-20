@@ -123,21 +123,25 @@ function App() {
         }
         if (statsResult.data && statsResult.data.length > 0) {
           const history: Record<string, DayStats> = {};
+          let maxCloudXp = 0;
           for (const item of statsResult.data) {
             const key = new Date(item.date).toDateString();
+            const itemXp = item.xp ?? 0;
+            if (itemXp > maxCloudXp) maxCloudXp = itemXp;
             history[key] = {
               completedTasks: item.completed_tasks ?? 0,
               minimalActionCount: item.minimal_actions ?? 0,
-              xpGained: item.xp ?? 0,
+              xpGained: itemXp,
               energy: item.energy ?? "normal",
               timeMinutes: item.time_minutes ?? {},
             };
           }
           setDailyStats(history);
+          console.log("[SYNC] daily_stats rows:", statsResult.data.length, "| max cloud xp:", maxCloudXp);
+          if (maxCloudXp > 0) setXp(maxCloudXp);
   const todayDate = getLocalDateString();
           const todayRow = statsResult.data.find((s: any) => s.date === todayDate);
-          if (todayRow) {
-            setXp(todayRow.xp ?? 0);
+                    if (todayRow) {
             setEnergy(todayRow.energy ?? "normal");
             if (todayRow.time_minutes?.__actions) {
               const ca = todayRow.time_minutes.__actions;
@@ -158,21 +162,25 @@ function App() {
           }
         }
 
-      } catch (err) {
+            } catch (err) {
         console.error("[cloud] Failed to load from Supabase:", err);
       } finally {
-        if (!cancelled) setCloudReady(true);
+        if (!cancelled) {
+          console.log("[SYNC] Init complete, cloudReady set to true");
+          setCloudReady(true);
+        }
       }
     }
-    initFromCloud();
+    initFromCloud();initFromCloud();
     return () => { cancelled = true; };
   }, []);
 
   // 鈹€鈹€ Unified persistence 鈹€鈹€
-  useEffect(() => {
+    useEffect(() => {
     if (!cloudReady) return;
     if (!initialSyncDone.current) { initialSyncDone.current = true; }
-    const newData = {
+    console.log("[SYNC] Syncing - xp:", xp, "tasks:", tasks.length, "records:", Object.keys(dailyRecords).length);
+        const newData = {
       username: DEFAULT_USERNAME, level: 0, xp, energy, tasks,
       actions: dailyRecords, history: dailyStats, timeRecords,
       dailyTaskRecords,
