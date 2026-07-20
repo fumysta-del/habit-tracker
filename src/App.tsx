@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import "./App.css";
 import { supabase } from "./supabase";
 (window as any).supabase = supabase;
@@ -359,7 +359,7 @@ function App() {
         <HomePage
           energy={energy} setEnergy={setEnergy}
           level={level} currentLevelXp={currentLevelXp} progressPercent={progressPercent}
-          todayStats={todayStats} streak={streak}
+          todayStats={todayStats} streak={streak} totalTasks={tasks.length}
         />
       ) : activeTab === "tasks" ? (
         <TasksPage

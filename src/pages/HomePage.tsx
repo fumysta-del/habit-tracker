@@ -1,32 +1,28 @@
-import { EnergyCard } from "../components/EnergyCard";
-import { LevelCard } from "../components/LevelCard";
-import { DailySummary } from "../components/DailySummary";
+import { LevelHero } from "../components/LevelHero";
+import { ActivityRing } from "../components/ActivityRing";
+import { EnergyIndicator } from "../components/EnergyIndicator";
+import { DailyThemeBanner } from "../components/DailyThemeBanner";
 import type { DayStats } from "../storage";
 
 interface HomePageProps {
   energy: string; setEnergy: (e: "low" | "normal" | "high") => void;
   level: number; currentLevelXp: number; progressPercent: number;
-  todayStats: DayStats; streak: number;
+  todayStats: DayStats; streak: number; totalTasks: number;
 }
 
 export function HomePage(p: HomePageProps) {
+  const totalMinutes = Object.values(p.todayStats.timeMinutes ?? {}).reduce((a: number, b: number) => a + b, 0);
   return (
     <>
-      <header className="header">
-        <h1>今日行动</h1>
-        <p className="subtitle">{p.streak > 0 ? p.streak + "天持续行动" : "开始今天的行动吧"}</p>
-      </header>
-      <EnergyCard energy={p.energy} onChange={p.setEnergy} />
-      <LevelCard level={p.level} currentLevelXp={p.currentLevelXp} progressPercent={p.progressPercent} />
-      <DailySummary
+      <LevelHero level={p.level} currentLevelXp={p.currentLevelXp} progressPercent={p.progressPercent} />
+      <EnergyIndicator energy={p.energy} onChange={p.setEnergy} />
+      <ActivityRing
         completedTasks={p.todayStats.completedTasks}
+        totalCount={p.totalTasks}
         minimalActionCount={p.todayStats.minimalActionCount}
-        xpGained={p.todayStats.xpGained}
-        streak={p.streak}
+        totalMinutes={totalMinutes}
       />
-      {/* Placeholder: DailyThemeBanner (future) */}
-      {/* Placeholder: ProgressArc (future) */}
-      {/* Placeholder: Personal Media Background (future) */}
+      <DailyThemeBanner />
     </>
   );
 }
