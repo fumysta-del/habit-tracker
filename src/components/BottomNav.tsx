@@ -1,9 +1,17 @@
-﻿export function BottomNav({ activeTab, onChange }: { activeTab: string; onChange: (t: "today" | "history" | "weekly") => void }) {
+export function BottomNav({ activeTab, onChange }: { activeTab: string; onChange: (t: "home" | "tasks" | "growth" | "profile") => void }) {
+  const tabs = [
+    { key: "home" as const, label: "首页" },
+    { key: "tasks" as const, label: "任务" },
+    { key: "growth" as const, label: "成长" },
+    { key: "profile" as const, label: "个人" },
+  ];
   return (
     <nav className="bottom-nav">
-      <button className={`nav-btn ${activeTab === "today" ? "active" : ""}`} onClick={() => onChange("today")}>今日</button>
-      <button className={`nav-btn ${activeTab === "weekly" ? "active" : ""}`} onClick={() => onChange("weekly")}>周报</button>
-      <button className={`nav-btn ${activeTab === "history" ? "active" : ""}`} onClick={() => onChange("history")}>历史</button>
+      {tabs.map((t) => (
+        <button key={t.key} className={"nav-btn" + (activeTab === t.key ? " active" : "")} onClick={() => onChange(t.key)}>
+          {t.label}
+        </button>
+      ))}
     </nav>
   );
 }

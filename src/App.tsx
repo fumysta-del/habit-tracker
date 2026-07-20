@@ -13,29 +13,29 @@ import {
   type DayStats,
   type TimeRecord,
 } from "./storage";
-import { TodayPage } from "./pages/TodayPage";
-import { HistoryPage } from "./pages/HistoryPage";
-import { WeeklyPage } from "./pages/WeeklyPage";
+import { HomePage } from "./pages/HomePage";
+import { TasksPage } from "./pages/TasksPage";
+import { GrowthPage } from "./pages/GrowthPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { BottomNav } from "./components/BottomNav";
 
-// ── Constants ──
+// 鈹€鈹€ Constants 鈹€鈹€
 const TASK_XP_MAP: Record<string, number> = {
-  "运动10分钟": 20,
-  "学习30分钟": 30,
-  "整理桌面": 5,
+  "杩愬姩10鍒嗛挓": 20,
+  "瀛︿範30鍒嗛挓": 30,
+  "鏁寸悊妗岄潰": 5,
 };
 const CUSTOM_TASK_XP = 10;
 const MINIMAL_ACTION_XP = 3;
 
 const TIME_CATEGORIES = [
-  { type: "游戏", icon: "🎮" },
-  { type: "学习", icon: "📚" },
-  { type: "运动", icon: "🏃" },
-  { type: "休息", icon: "🛌" },
+  { type: "娓告垙", icon: "馃幃" },
+  { type: "瀛︿範", icon: "馃摎" },
+  { type: "杩愬姩", icon: "馃弮" },
+  { type: "浼戞伅", icon: "馃泴" },
 ];
 
-// ── Helpers ──
+// 鈹€鈹€ Helpers 鈹€鈹€
 function getTaskXp(text: string): number {
   return TASK_XP_MAP[text] ?? CUSTOM_TASK_XP;
 }
@@ -87,9 +87,9 @@ function formatDateRange(days: string[]): string {
   return `${fmt(days[0])} - ${fmt(days[days.length - 1])}`;
 }
 
-// ── Component ──
+// 鈹€鈹€ Component 鈹€鈹€
 function App() {
-  // ── State ──
+  // 鈹€鈹€ State 鈹€鈹€
   const [tasks, setTasks] = useState<Task[]>(() => loadData().tasks);
   const [xp, setXp] = useState(() => loadData().xp);
   const [energy, setEnergy] = useState<"low" | "normal" | "high">(() => loadData().energy);
@@ -98,17 +98,17 @@ function App() {
   const [timeRecords, setTimeRecords] = useState<TimeRecord[]>(() => loadData().timeRecords ?? []);
 
   const [input, setInput] = useState("");
-  const [activeTab, setActiveTab] = useState<"today" | "history" | "weekly">("today");
+  const [activeTab, setActiveTab] = useState<"home" | "tasks" | "growth" | "profile">("home");
 
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
   const [historyDate, setHistoryDate] = useState(todayStr);
 
-  // ── Cloud sync guard ──
+  // 鈹€鈹€ Cloud sync guard 鈹€鈹€
   const [cloudReady, setCloudReady] = useState(false);
   const initialSyncDone = useRef(false);
 
-  // ── Consolidated Supabase load ──
+  // 鈹€鈹€ Consolidated Supabase load 鈹€鈹€
   useEffect(() => {
     let cancelled = false;
     async function initFromCloud() {
@@ -167,7 +167,7 @@ function App() {
     return () => { cancelled = true; };
   }, []);
 
-  // ── Unified persistence ──
+  // 鈹€鈹€ Unified persistence 鈹€鈹€
   useEffect(() => {
     if (!cloudReady) return;
     if (!initialSyncDone.current) { initialSyncDone.current = true; }
@@ -179,7 +179,7 @@ function App() {
     syncToSupabase(newData);
   }, [tasks, xp, energy, dailyRecords, dailyStats, timeRecords, cloudReady]);
 
-  // ── Live timer tick ──
+  // 鈹€鈹€ Live timer tick 鈹€鈹€
   const [tick, setTick] = useState(0);
   const hasRunningTimer = useMemo(
     () => timeRecords.some((r) => !r.endTime && new Date(r.startTime).toDateString() === todayKey()),
@@ -191,7 +191,7 @@ function App() {
     return () => clearInterval(id);
   }, [hasRunningTimer]);
 
-  // ── Derived: today stats ──
+  // 鈹€鈹€ Derived: today stats 鈹€鈹€
   const todayRecords = useMemo(() => dailyRecords[todayKey()] ?? [], [dailyRecords]);
 
   const todayTimeRecords = useMemo(
@@ -223,7 +223,7 @@ function App() {
 
   const streak = useMemo(() => calculateStreak(dailyStats), [dailyStats]);
 
-  // ── Weekly stats ──
+  // 鈹€鈹€ Weekly stats 鈹€鈹€
   const weeklyStats = useMemo(() => {
     const last7 = getLast7Days();
     const entries = last7.map((k) => ({ key: k, stat: dailyStats[k] ?? null }));
@@ -260,14 +260,14 @@ function App() {
     };
   }, [dailyStats]);
 
-  // ── Daily stats snapshot ──
+  // 鈹€鈹€ Daily stats snapshot 鈹€鈹€
   useEffect(() => {
     if (!cloudReady) return;
     const key = todayKey();
     setDailyStats((prev) => ({ ...prev, [key]: todayStats }));
   }, [todayStats, cloudReady]);
 
-  // ── Derived: UI ──
+  // 鈹€鈹€ Derived: UI 鈹€鈹€
   const totalXp = calculateTotalXp(dailyStats, todayStats.xpGained);
   const level = Math.floor(totalXp / 100) + 1;
   const currentLevelXp = totalXp % 100;
@@ -276,13 +276,13 @@ function App() {
   const isRunning = (type: string) =>
     todayTimeRecords.some((r) => r.type === type && !r.endTime);
 
-  // ── Handlers ──
+  // 鈹€鈹€ Handlers 鈹€鈹€
   const addTask = async () => {
     if (!input.trim()) return;
     const newTask = { id: Date.now(), text: input.trim(), completed: false };
     setTasks([...tasks, newTask]);
     const { error } = await supabase.from("tasks").insert(newTask);
-    if (error) console.error("任务保存失败:", error);
+    if (error) console.error("浠诲姟淇濆瓨澶辫触:", error);
     setInput("");
   };
 
@@ -293,7 +293,7 @@ function App() {
       const delta = task.completed ? -getTaskXp(task.text) : getTaskXp(task.text);
       const newCompleted = !task.completed;
       supabase.from("tasks").update({ completed: newCompleted }).eq("id", id)
-        .then(({ error }) => { if (error) console.error("任务更新失败:", error); });
+        .then(({ error }) => { if (error) console.error("浠诲姟鏇存柊澶辫触:", error); });
       setXp((p) => Math.max(0, p + delta));
       return prev.map((t) => t.id === id ? { ...t, completed: newCompleted } : t);
     });
@@ -303,7 +303,7 @@ function App() {
     setTasks((prev) => {
       const task = prev.find((t) => t.id === id);
       supabase.from("tasks").delete().eq("id", id)
-        .then(({ error }) => { if (error) console.error("任务删除失败:", error); });
+        .then(({ error }) => { if (error) console.error("浠诲姟鍒犻櫎澶辫触:", error); });
       if (task?.completed) setXp((p) => Math.max(0, p - getTaskXp(task.text)));
       return prev.filter((t) => t.id !== id);
     });
@@ -352,29 +352,32 @@ function App() {
     });
   };
 
-  // ── Render ──
+  // 鈹€鈹€ Render 鈹€鈹€
   return (
     <div className="app">
-      {activeTab === "today" ? (
-        <TodayPage
+      {activeTab === "home" ? (
+        <HomePage
           energy={energy} setEnergy={setEnergy}
           level={level} currentLevelXp={currentLevelXp} progressPercent={progressPercent}
           todayStats={todayStats} streak={streak}
-          isRunning={isRunning} startTimer={startTimer} stopTimer={stopTimer}
-          todayRecords={todayRecords} deleteRecord={deleteRecord}
-          doMinimalAction={doMinimalAction}
+        />
+      ) : activeTab === "tasks" ? (
+        <TasksPage
           tasks={tasks} input={input} setInput={setInput}
           addTask={addTask} toggleTask={toggleTask} deleteTask={deleteTask}
           getTaskXp={getTaskXp}
+          doMinimalAction={doMinimalAction}
         />
-      ) : activeTab === "history" ? (
-        <HistoryPage
+      ) : activeTab === "growth" ? (
+        <GrowthPage
+          todayRecords={todayRecords} deleteRecord={deleteRecord}
+          todayStats={todayStats}
+          isRunning={isRunning} startTimer={startTimer} stopTimer={stopTimer}
           dailyStats={dailyStats}
           historyDate={historyDate} setHistoryDate={setHistoryDate}
           todayStr={todayStr}
+          weeklyStats={weeklyStats}
         />
-      ) : activeTab === "weekly" ? (
-        <WeeklyPage weeklyStats={weeklyStats} />
       ) : (
         <ProfilePage />
       )}
