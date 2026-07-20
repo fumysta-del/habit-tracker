@@ -1,7 +1,6 @@
 import { LevelHero } from "../components/LevelHero";
 import { ActivityRing } from "../components/ActivityRing";
 import { EnergyIndicator } from "../components/EnergyIndicator";
-import { DailyThemeBanner } from "../components/DailyThemeBanner";
 import type { DayStats } from "../storage";
 
 interface HomePageProps {
@@ -22,7 +21,6 @@ export function HomePage(p: HomePageProps) {
         minimalActionCount={p.todayStats.minimalActionCount}
         totalMinutes={totalMinutes}
       />
-      <DailyThemeBanner />
     </>
   );
 }

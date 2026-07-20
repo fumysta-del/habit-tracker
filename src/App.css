@@ -1,4 +1,4 @@
-﻿.app {
+.app {
   width: 100%;
   max-width: 520px;
   padding-bottom: 72px;
@@ -917,21 +917,3 @@
   color: var(--color-text-secondary);
 }
 
-/* ── Daily Theme Banner ── */
-.theme-banner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-sm);
-  padding: var(--space-md) var(--space-lg);
-  margin: var(--space-lg) var(--space-md) 0;
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
-}
-.theme-banner-emoji { font-size: 18px; line-height: 1; }
-.theme-banner-text {
-  font-size: var(--font-size-caption);
-  color: var(--color-text-tertiary);
-  font-weight: var(--font-weight-medium);
-}

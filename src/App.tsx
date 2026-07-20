@@ -6,7 +6,6 @@ import {
   loadData,
   saveData,
   syncToSupabase,
-  calculateTotalXp,
   DEFAULT_USERNAME,
   type Task,
   type MinimalRecord,
@@ -275,9 +274,8 @@ function App() {
   }, [todayStats, cloudReady]);
 
   // 鈹€鈹€ Derived: UI 鈹€鈹€
-  const totalXp = calculateTotalXp(dailyStats, todayStats.xpGained);
-  const level = Math.floor(totalXp / 100) + 1;
-  const currentLevelXp = totalXp % 100;
+  const level = Math.floor(xp / 100) + 1;
+  const currentLevelXp = xp % 100;
   const progressPercent = Math.min(currentLevelXp, 100);
 
   const isRunning = (type: string) =>
