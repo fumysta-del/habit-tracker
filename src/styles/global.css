@@ -5,7 +5,7 @@
 }
 
 body {
-  font-family: var(--font-family);
+  font-family: var(--font-body);
   background: var(--color-bg);
   color: var(--color-text-primary);
   line-height: 1.6;
@@ -14,9 +14,27 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-semibold);
+}
+
+.heading-serif {
+  font-family: var(--font-heading);
+}
+
+.number-mono {
+  font-family: var(--font-number);
+  font-variant-numeric: tabular-nums;
+}
+
 #root {
   min-height: 100vh;
   display: flex;
   justify-content: center;
-  padding: 40px 16px;
+  padding: 0;
+  background: var(--color-bg);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(212, 168, 83, 0.04) 0%, transparent 100%),
+    radial-gradient(ellipse 60% 50% at 80% 30%, rgba(46, 196, 182, 0.03) 0%, transparent 100%);
 }
