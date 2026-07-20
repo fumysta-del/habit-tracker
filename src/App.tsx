@@ -210,7 +210,10 @@ function App() {
   const todayCompletionRecords = dailyTaskRecords[todayStrISO] ?? [];
 
   const todayTimeRecords = useMemo(
-    () => timeRecords.filter((r) => new Date(r.startTime).toDateString() === todayKey()),
+    () => timeRecords.filter((r) => {
+      const d = new Date(r.startTime);
+      return !isNaN(d.getTime()) && d.toDateString() === todayKey();
+    }),
     [timeRecords],
   );
 
@@ -220,9 +223,12 @@ function App() {
     for (const cat of TIME_CATEGORIES) minutes[cat.type] = 0;
     for (const r of todayTimeRecords) {
       if (r.endTime) {
-        minutes[r.type] += r.duration;
+        const dur = typeof r.duration === 'number' && !isNaN(r.duration) ? r.duration : 0;
+        minutes[r.type] += dur;
       } else {
-        minutes[r.type] += Math.max(0, Math.round((nowMs - new Date(r.startTime).getTime()) / 60000));
+        const startMs = new Date(r.startTime).getTime();
+        const elapsed = !isNaN(startMs) ? Math.max(0, Math.round((nowMs - startMs) / 60000)) : 0;
+        minutes[r.type] += elapsed;
       }
     }
     return {
@@ -370,7 +376,9 @@ const doMinimalAction = (action: string) => {
         const r = prev[i];
         if (r.type === type && !r.endTime) {
           const endTime = new Date(n).toISOString();
-          const duration = Math.max(1, Math.round((n - new Date(r.startTime).getTime()) / 60000));
+          const startMs = new Date(r.startTime).getTime();
+          if (isNaN(startMs)) return prev;
+          const duration = Math.max(1, Math.round((n - startMs) / 60000));
           const u = [...prev];
           u[i] = { ...r, endTime, duration };
           return u;
