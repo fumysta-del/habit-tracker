@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+﻿import { useState, useEffect, useMemo, useRef } from "react";
 import "./App.css";
 import { supabase } from "./supabase";
 (window as any).supabase = supabase;
@@ -175,6 +175,7 @@ function App() {
     const newData = {
       username: DEFAULT_USERNAME, level: 0, xp, energy, tasks,
       actions: dailyRecords, history: dailyStats, timeRecords,
+      dailyTaskRecords,
        updatedAt: "",
     };
     saveData(newData);
