@@ -5,10 +5,10 @@ export function LevelHero({ level, currentLevelXp, progressPercent }: { level: n
       <div className="level-hero-content">
         <span className="level-hero-label">L E V E L</span>
         <div className="level-hero-number number-mono">{level}</div>
+        <div className="level-hero-divider" />
         <div className="level-hero-bar">
           <div className="level-hero-bar-track">
             <div className="level-hero-bar-fill" style={{ width: Math.min(progressPercent, 100) + "%" }} />
-            <div className="level-hero-bar-glow" style={{ left: Math.min(progressPercent, 100) + "%" }} />
           </div>
         </div>
         <span className="level-hero-xp number-mono">

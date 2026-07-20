@@ -17,9 +17,8 @@ export function EnergyIndicator({ energy, onChange }: { energy: string; onChange
           <div key={l.key}
             className={"energy-dot" + (l.key === energy ? " active" : "")}
             style={{
-              background: l.key === energy ? l.gradient : "transparent",
-              borderColor: l.key === energy ? "transparent" : "var(--color-border)",
-              boxShadow: l.key === energy ? "0 0 20px " + l.color + ", 0 0 40px " + l.color.replace(")", ",0.3)") : "none",
+              background: l.key === energy ? l.gradient : "var(--color-border)",
+              boxShadow: l.key === energy ? "0 0 14px " + l.color : "none",
             }}
           />
         ))}

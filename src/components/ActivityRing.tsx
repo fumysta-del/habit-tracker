@@ -34,14 +34,13 @@ export function ActivityRing({ completedTasks, totalCount, minimalActionCount, t
           <div key={ring.key} className="activity-ring">
             <div className="activity-ring-visual">
               <svg width="80" height="80" viewBox="0 0 80 80">
-                <circle cx="40" cy="40" r={r} fill="none" stroke="rgba(255,255,255,0.04)" strokeWidth="5" />
+                <circle cx="40" cy="40" r={r} fill="none" stroke="var(--color-divider)" strokeWidth="5" />
                 <circle cx="40" cy="40" r={r} fill="none" stroke={ring.color} strokeWidth="5"
                   strokeLinecap="round"
                   strokeDasharray={circumference}
                   strokeDashoffset={offset}
                   transform="rotate(-90 40 40)"
                   className="activity-ring-arc"
-                  style={{ filter: "drop-shadow(0 0 6px " + ring.color + ")" }}
                 />
               </svg>
               <span className="activity-ring-value number-mono">{v.display}</span>
