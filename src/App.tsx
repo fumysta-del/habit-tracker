@@ -12,6 +12,7 @@ import {
   type MinimalRecord,
   type DayStats,
   type TimeRecord,
+  type DailyTaskRecord,
 } from "./storage";
 import { HomePage } from "./pages/HomePage";
 import { TasksPage } from "./pages/TasksPage";
@@ -94,6 +95,7 @@ function App() {
   const [xp, setXp] = useState(() => loadData().xp);
   const [energy, setEnergy] = useState<"low" | "normal" | "high">(() => loadData().energy);
   const [dailyRecords, setDailyRecords] = useState<Record<string, MinimalRecord[]>>(() => loadData().actions);
+  const [dailyTaskRecords, setDailyTaskRecords] = useState<Record<string, DailyTaskRecord[]>>(() => loadData().dailyTaskRecords ?? {});
   const [dailyStats, setDailyStats] = useState<Record<string, DayStats>>(() => loadData().history);
   const [timeRecords, setTimeRecords] = useState<TimeRecord[]>(() => loadData().timeRecords ?? []);
 
@@ -120,7 +122,7 @@ function App() {
         if (cancelled) return;
         let cloudDataApplied = false;
         if (tasksResult.data && tasksResult.data.length > 0) {
-          setTasks(tasksResult.data.map((t: any) => ({ id: t.id, text: t.text, completed: t.completed })));
+          setTasks(tasksResult.data.map((t: any) => ({ id: t.id, text: t.text, xp: TASK_XP_MAP[t.text as string] ?? CUSTOM_TASK_XP })));
           cloudDataApplied = true;
         }
         if (statsResult.data && statsResult.data.length > 0) {
@@ -154,7 +156,8 @@ function App() {
           const local = loadData();
           saveData({
             username: DEFAULT_USERNAME, level: 0, xp: local.xp, energy: local.energy,
-            tasks: local.tasks, actions: local.actions, history: local.history, timeRecords: local.timeRecords, updatedAt: "",
+            tasks: local.tasks, actions: local.actions, history: local.history, timeRecords: local.timeRecords,
+       updatedAt: "",
           });
         }
       } catch (err) {
@@ -173,11 +176,13 @@ function App() {
     if (!initialSyncDone.current) { initialSyncDone.current = true; }
     const newData = {
       username: DEFAULT_USERNAME, level: 0, xp, energy, tasks,
-      actions: dailyRecords, history: dailyStats, timeRecords, updatedAt: "",
+      actions: dailyRecords, history: dailyStats, timeRecords,
+       updatedAt: "",
     };
     saveData(newData);
     syncToSupabase(newData);
-  }, [tasks, xp, energy, dailyRecords, dailyStats, timeRecords, cloudReady]);
+  }, [tasks, xp, energy, dailyRecords, dailyStats, timeRecords,
+       cloudReady]);
 
   // 鈹€鈹€ Live timer tick 鈹€鈹€
   const [tick, setTick] = useState(0);
@@ -193,6 +198,9 @@ function App() {
 
   // 鈹€鈹€ Derived: today stats 鈹€鈹€
   const todayRecords = useMemo(() => dailyRecords[todayKey()] ?? [], [dailyRecords]);
+
+  const todayStrISO = new Date().toISOString().split('T')[0];
+  const todayCompletionRecords = dailyTaskRecords[todayStrISO] ?? [];
 
   const todayTimeRecords = useMemo(
     () => timeRecords.filter((r) => new Date(r.startTime).toDateString() === todayKey()),
@@ -211,10 +219,10 @@ function App() {
       }
     }
     return {
-      completedTasks: tasks.filter((t) => t.completed).length,
+      completedTasks: todayCompletionRecords.filter((r) => r.completed).length,
       minimalActionCount: todayRecords.length,
       xpGained:
-        tasks.filter((t) => t.completed).reduce((s, t) => s + getTaskXp(t.text), 0) +
+        todayCompletionRecords.filter((r) => r.completed).reduce((s, r) => s + (tasks.find((t) => t.id === r.taskId)?.xp ?? 0), 0) +
         todayRecords.reduce((s, r) => s + r.xp, 0),
       energy,
       timeMinutes: minutes,
@@ -279,9 +287,10 @@ function App() {
   // 鈹€鈹€ Handlers 鈹€鈹€
   const addTask = async () => {
     if (!input.trim()) return;
-    const newTask = { id: Date.now(), text: input.trim(), completed: false };
+    const xpVal = TASK_XP_MAP[input.trim()] ?? CUSTOM_TASK_XP;
+    const newTask: Task = { id: Date.now(), text: input.trim(), xp: xpVal };
     setTasks([...tasks, newTask]);
-    const { error } = await supabase.from("tasks").insert(newTask);
+    const { error } = await supabase.from("tasks").insert({ id: newTask.id, text: newTask.text });
     if (error) console.error("浠诲姟淇濆瓨澶辫触:", error);
     setInput("");
   };
@@ -365,7 +374,7 @@ function App() {
         <TasksPage
           tasks={tasks} input={input} setInput={setInput}
           addTask={addTask} toggleTask={toggleTask} deleteTask={deleteTask}
-          getTaskXp={getTaskXp}
+          
           doMinimalAction={doMinimalAction}
         />
       ) : activeTab === "growth" ? (
