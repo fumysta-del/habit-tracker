@@ -1,44 +1,43 @@
 :root {
   /* ── Background & Surface ── */
-  --color-bg: #f7f5f0;
+  --color-bg: #f5f0eb;
   --color-surface: #ffffff;
-  --color-surface-raised: #faf8f4;
+  --color-surface-warm: #fdfbf9;
 
-  /* ── Primary: Gold / XP / Level ── */
-  --color-gold: #d4a853;
-  --color-gold-dark: #b8923f;
-  --color-gold-light: #f0d78c;
-  --color-gold-glow: rgba(212, 168, 83, 0.25);
+  /* ── Primary: Caramel / Gold ── */
+  --color-primary: #c4956a;
+  --color-primary-dark: #a67c52;
+  --color-primary-light: #e0c4a8;
+  --color-primary-glow: rgba(196, 149, 106, 0.15);
 
-  /* ── Accent: Teal / Growth / Focus ── */
-  --color-teal: #2ec4b6;
-  --color-teal-dark: #25a89c;
-  --color-teal-light: #6dd5ed;
-  --color-teal-glow: rgba(46, 196, 182, 0.25);
+  /* ── Accent: Sage (Growth) ── */
+  --color-accent: #8fb0a0;
+  --color-accent-dark: #6d8d7d;
+  --color-accent-light: #b8d0c5;
 
   /* ── Energy ── */
-  --color-energy-low: #74b9ff;
-  --color-energy-normal: #f5c542;
-  --color-energy-high: #ff6b6b;
+  --color-energy-low: #a8c8e8;
+  --color-energy-normal: #e8c47a;
+  --color-energy-high: #e8836a;
 
   /* ── Text ── */
-  --color-text-primary: #2d2416;
-  --color-text-secondary: #6b6258;
-  --color-text-tertiary: #9e958b;
-  --color-text-muted: #c4bbb0;
+  --color-text-primary: #2c2416;
+  --color-text-secondary: #7a7166;
+  --color-text-tertiary: #b0a89c;
+  --color-text-muted: #d0c8bc;
   --color-text-inverse: #ffffff;
 
   /* ── Utility ── */
-  --color-border: #e8e2d8;
+  --color-border: #e8e0d8;
   --color-divider: #f0ebe4;
-  --color-error: #e74c3c;
+  --color-error: #cc5a4a;
 
   /* ── Gradients ── */
-  --gradient-hero: linear-gradient(145deg, #1a1a2e 0%, #2d2416 40%, #3d2b1a 100%);
-  --gradient-gold: linear-gradient(90deg, #d4a853, #f0d78c);
-  --gradient-energy-low: radial-gradient(circle, #74b9ff, #4a9ff5);
-  --gradient-energy-normal: radial-gradient(circle, #f5c542, #f0a830);
-  --gradient-energy-high: radial-gradient(circle, #ff6b6b, #ff4757);
+  --gradient-hero: linear-gradient(145deg, #2c2416 0%, #4a3a28 50%, #5c4830 100%);
+  --gradient-gold: linear-gradient(90deg, #c4956a, #e0c4a8);
+  --gradient-energy-low: radial-gradient(circle at 40% 40%, #c4e0f8, #a8c8e8);
+  --gradient-energy-normal: radial-gradient(circle at 40% 40%, #f5dba0, #e8c47a);
+  --gradient-energy-high: radial-gradient(circle at 40% 40%, #f5a890, #e8836a);
 
   /* ── Typography ── */
   --font-heading: "LXGW WenKai", "Noto Serif SC", "Source Han Serif SC", serif;
@@ -46,8 +45,8 @@
   --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
 
   --font-size-hero: 72px;
-  --font-size-huge: 36px;
-  --font-size-h1: 22px;
+  --font-size-huge: 40px;
+  --font-size-h1: 24px;
   --font-size-h2: 18px;
   --font-size-body: 15px;
   --font-size-caption: 13px;
@@ -68,6 +67,7 @@
   --space-3xl: 32px;
   --space-4xl: 40px;
   --space-5xl: 48px;
+  --space-6xl: 56px;
 
   /* ── Border Radius ── */
   --radius-sm: 6px;
@@ -78,15 +78,14 @@
   --radius-full: 9999px;
 
   /* ── Shadows ── */
-  --shadow-sm: 0 1px 3px rgba(45, 36, 22, 0.04);
-  --shadow-md: 0 2px 10px rgba(45, 36, 22, 0.06);
-  --shadow-lg: 0 4px 24px rgba(45, 36, 22, 0.08);
-  --shadow-hero: 0 8px 32px rgba(212, 168, 83, 0.2);
+  --shadow-sm: 0 1px 3px rgba(44, 36, 22, 0.04);
+  --shadow-md: 0 2px 10px rgba(44, 36, 22, 0.06);
+  --shadow-lg: 0 4px 24px rgba(44, 36, 22, 0.08);
+  --shadow-hero: 0 8px 32px rgba(196, 149, 106, 0.15);
 
   /* ── Animation ── */
   --transition-fast: 0.15s ease;
   --transition-normal: 0.25s ease;
   --transition-slow: 0.5s ease;
-
-  /* ── Keyframes (defined inline if needed) ── */
+  --transition-spring: 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

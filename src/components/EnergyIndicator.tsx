@@ -5,21 +5,20 @@ const LEVELS = [
 ];
 
 export function EnergyIndicator({ energy, onChange }: { energy: string; onChange: (e: "low" | "normal" | "high") => void }) {
+  const current = LEVELS.find((l) => l.key === energy) ?? LEVELS[1];
   const cycle = () => {
     const idx = LEVELS.findIndex((l) => l.key === energy);
     onChange(LEVELS[(idx + 1) % LEVELS.length].key);
   };
-  const current = LEVELS.find((l) => l.key === energy) ?? LEVELS[1];
   return (
     <div className="energy-selector" onClick={cycle}>
       <div className="energy-dots">
         {LEVELS.map((l) => (
-          <div
-            key={l.key}
+          <div key={l.key}
             className={"energy-dot" + (l.key === energy ? " active" : "")}
             style={{
               background: l.key === energy ? l.gradient : "var(--color-border)",
-              boxShadow: l.key === energy ? "0 0 12px " + l.color : "none",
+              boxShadow: l.key === energy ? "0 0 14px " + l.color : "none",
             }}
           />
         ))}

@@ -18,6 +18,7 @@ import { HomePage } from "./pages/HomePage";
 import { TasksPage } from "./pages/TasksPage";
 import { GrowthPage } from "./pages/GrowthPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { DecorativeBg } from "./components/DecorativeBg";
 import { BottomNav } from "./components/BottomNav";
 
 // 鈹€鈹€ Constants 鈹€鈹€
@@ -373,6 +374,7 @@ const doMinimalAction = (action: string) => {
 
   // 鈹€鈹€ Render 鈹€鈹€
   return (
+    <><DecorativeBg />
     <div className="app">
       {activeTab === "home" ? (
         <HomePage
@@ -403,6 +405,7 @@ const doMinimalAction = (action: string) => {
       )}
       <BottomNav activeTab={activeTab} onChange={setActiveTab} />
     </div>
+    </>
   );
 }
 

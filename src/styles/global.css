@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: var(--font-body);
   background: var(--color-bg);
@@ -34,7 +38,33 @@ h1, h2, h3, h4, h5, h6 {
   justify-content: center;
   padding: 0;
   background: var(--color-bg);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Subtle warm grid overlay */
+#root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
   background-image:
-    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(212, 168, 83, 0.04) 0%, transparent 100%),
-    radial-gradient(ellipse 60% 50% at 80% 30%, rgba(46, 196, 182, 0.03) 0%, transparent 100%);
+    linear-gradient(rgba(196, 149, 106, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(196, 149, 106, 0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Warm radial glow */
+#root::after {
+  content: '';
+  position: fixed;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(196, 149, 106, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
