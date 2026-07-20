@@ -7,6 +7,7 @@ import {
   saveData,
   syncToSupabase,
   DEFAULT_USERNAME,
+  getLocalDateString,
   type Task,
   type MinimalRecord,
   type DayStats,
@@ -134,7 +135,7 @@ function App() {
             };
           }
           setDailyStats(history);
-          const todayDate = new Date().toISOString().split("T")[0];
+  const todayDate = getLocalDateString();
           const todayRow = statsResult.data.find((s: any) => s.date === todayDate);
           if (todayRow) {
             setXp(todayRow.xp ?? 0);
@@ -197,7 +198,7 @@ function App() {
   // 鈹€鈹€ Derived: today stats 鈹€鈹€
   const todayRecords = useMemo(() => dailyRecords[todayKey()] ?? [], [dailyRecords]);
 
-  const todayStrISO = new Date().toISOString().split('T')[0];
+  const todayStrISO = getLocalDateString();
   const todayCompletionRecords = dailyTaskRecords[todayStrISO] ?? [];
 
   const todayTimeRecords = useMemo(
@@ -295,7 +296,7 @@ function App() {
     const toggleTask = (id: number) => {
     const task = tasks.find((t) => t.id === id);
     if (!task) return;
-    const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = getLocalDateString();
     const record = todayCompletionRecords.find((r) => r.taskId === id);
     if (record?.completed) {
       setXp((p) => Math.max(0, p - task.xp));
@@ -318,7 +319,7 @@ function App() {
   const deleteTask = (id: number) => {
     const task = tasks.find((t) => t.id === id);
     if (!task) return;
-    const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = getLocalDateString();
     const record = todayCompletionRecords.find((r) => r.taskId === id);
     if (record?.completed) setXp((p) => Math.max(0, p - task.xp));
     setTasks((prev) => prev.filter((t) => t.id !== id));
