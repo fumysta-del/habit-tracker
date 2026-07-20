@@ -5,15 +5,17 @@ const LEVELS = [
 ];
 
 export function EnergyIndicator({ energy, onChange }: { energy: string; onChange: (e: "low" | "normal" | "high") => void }) {
-  const current = LEVELS.find((l) => l.key === energy) ?? LEVELS[1];
   const cycle = () => {
     const idx = LEVELS.findIndex((l) => l.key === energy);
     onChange(LEVELS[(idx + 1) % LEVELS.length].key);
   };
   return (
-    <div className="energy-indicator" onClick={cycle} title="点击切换">
-      <span className="energy-indicator-dot" style={{ background: current.color }} />
-      <span className="energy-indicator-text">{current.label}</span>
+    <div className="energy-indicator" onClick={cycle}>
+      {LEVELS.map((l) => (
+        <div key={l.key} className={`energy-indicator-dot${l.key === energy ? " active" : ""}`}
+          style={{ background: l.key === energy ? l.color : "var(--color-border)" }}
+        />
+      ))}
     </div>
   );
 }
