@@ -13,6 +13,11 @@ import {
   type DayStats,
   type TimeRecord,
 } from "./storage";
+import { TodayPage } from "./pages/TodayPage";
+import { HistoryPage } from "./pages/HistoryPage";
+import { WeeklyPage } from "./pages/WeeklyPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { BottomNav } from "./components/BottomNav";
 
 // ── Constants ──
 const TASK_XP_MAP: Record<string, number> = {
@@ -22,26 +27,6 @@ const TASK_XP_MAP: Record<string, number> = {
 };
 const CUSTOM_TASK_XP = 10;
 const MINIMAL_ACTION_XP = 3;
-
-const ENERGY_OPTIONS = [
-  { key: "low" as const, label: "低能量", icon: "(( _ _ ))..zzzZZ" },
-  { key: "normal" as const, label: "普通", icon: "＜コ:彡" },
-  { key: "high" as const, label: "高能量", icon: "^ ^" },
-];
-
-const MINIMAL_ACTIONS = ["喝水", "拉伸30秒", "走到客厅", "打开学习资料"];
-
-const ENERGY_ICON_MAP: Record<string, string> = {
-  low: "(( _ _ ))..zzzZZ",
-  normal: "＜コ:彡",
-  high: "^ ^",
-};
-
-const ENERGY_LABEL_MAP: Record<string, string> = {
-  low: "低能量",
-  normal: "普通",
-  high: "高能量",
-};
 
 const TIME_CATEGORIES = [
   { type: "游戏", icon: "🎮" },
@@ -55,19 +40,10 @@ function getTaskXp(text: string): number {
   return TASK_XP_MAP[text] ?? CUSTOM_TASK_XP;
 }
 
-function formatTime(iso: string) {
-  const d = new Date(iso);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
-
 function todayKey() {
   return new Date().toDateString();
 }
 
-function dateInputToKey(input: string): string {
-  const [y, m, d] = input.split("-").map(Number);
-  return new Date(y, m - 1, d).toDateString();
-}
 
 function calculateStreak(stats: Record<string, DayStats>): number {
   let streak = 0;
@@ -111,16 +87,9 @@ function formatDateRange(days: string[]): string {
   return `${fmt(days[0])} - ${fmt(days[days.length - 1])}`;
 }
 
-function formatMinutes(totalMinutes: number): string {
-  const hours = Math.floor(totalMinutes / 60);
-  const mins = totalMinutes % 60;
-  if (hours > 0) return `${hours}小时${mins}分钟`;
-  return `${mins}分钟`;
-}
-
 // ── Component ──
 function App() {
-  // ── State: all initialized from localStorage (fast fallback) ──
+  // ── State ──
   const [tasks, setTasks] = useState<Task[]>(() => loadData().tasks);
   const [xp, setXp] = useState(() => loadData().xp);
   const [energy, setEnergy] = useState<"low" | "normal" | "high">(() => loadData().energy);
@@ -139,40 +108,22 @@ function App() {
   const [cloudReady, setCloudReady] = useState(false);
   const initialSyncDone = useRef(false);
 
-  // ── Consolidated Supabase load (runs once on mount) ──
+  // ── Consolidated Supabase load ──
   useEffect(() => {
     let cancelled = false;
-
     async function initFromCloud() {
       try {
-        console.log("[cloud] Loading data from Supabase...");
-
         const [tasksResult, statsResult] = await Promise.all([
           supabase.from("tasks").select("*").order("id"),
           supabase.from("daily_stats").select("*").order("date"),
         ]);
-
         if (cancelled) return;
-
         let cloudDataApplied = false;
-
-        // --- Tasks ---
         if (tasksResult.data && tasksResult.data.length > 0) {
-          console.log("[cloud] Loaded", tasksResult.data.length, "tasks");
-          const cloudTasks: Task[] = tasksResult.data.map((t: any) => ({
-            id: t.id,
-            text: t.text,
-            completed: t.completed,
-          }));
-          setTasks(cloudTasks);
+          setTasks(tasksResult.data.map((t: any) => ({ id: t.id, text: t.text, completed: t.completed })));
           cloudDataApplied = true;
-        } else {
-          console.log("[cloud] No tasks in cloud, keeping localStorage");
         }
-
-        // --- Daily stats (history) ---
         if (statsResult.data && statsResult.data.length > 0) {
-          console.log("[cloud] Loaded", statsResult.data.length, "daily_stats records");
           const history: Record<string, DayStats> = {};
           for (const item of statsResult.data) {
             const key = new Date(item.date).toDateString();
@@ -185,78 +136,45 @@ function App() {
             };
           }
           setDailyStats(history);
-
-          // Today's stats → override xp/energy
           const todayDate = new Date().toISOString().split("T")[0];
           const todayRow = statsResult.data.find((s: any) => s.date === todayDate);
           if (todayRow) {
-            console.log("[cloud] Today stats row found, applying xp/energy");
             setXp(todayRow.xp ?? 0);
             setEnergy(todayRow.energy ?? "normal");
             if (todayRow.time_minutes?.__actions) {
-              const cloudActions = todayRow.time_minutes.__actions;
-              if (Array.isArray(cloudActions) && cloudActions.length > 0) {
-                setDailyRecords(prev => ({ ...prev, [new Date().toDateString()]: cloudActions }));
+              const ca = todayRow.time_minutes.__actions;
+              if (Array.isArray(ca) && ca.length > 0) {
+                setDailyRecords(p => ({ ...p, [new Date().toDateString()]: ca }));
               }
             }
           }
-
           cloudDataApplied = true;
-        } else {
-          console.log("[cloud] No daily_stats in cloud, keeping localStorage");
         }
-
-        // If cloud data was applied, persist to localStorage for offline
         if (cloudDataApplied) {
           const local = loadData();
           saveData({
-            username: DEFAULT_USERNAME,
-            level: 0,
-            xp: local.xp,
-            energy: local.energy,
-            tasks: local.tasks,
-            actions: local.actions,
-            history: local.history,
-            timeRecords: local.timeRecords,
-            updatedAt: "",
+            username: DEFAULT_USERNAME, level: 0, xp: local.xp, energy: local.energy,
+            tasks: local.tasks, actions: local.actions, history: local.history, timeRecords: local.timeRecords, updatedAt: "",
           });
-          console.log("[cloud] Cloud data saved to localStorage");
         }
       } catch (err) {
         console.error("[cloud] Failed to load from Supabase:", err);
       } finally {
-        if (!cancelled) {
-          console.log("[cloud] Initial load complete, enabling sync");
-          setCloudReady(true);
-        }
+        if (!cancelled) setCloudReady(true);
       }
     }
-
     initFromCloud();
     return () => { cancelled = true; };
   }, []);
 
-  // ── Unified persistence (only after cloud data loaded) ──
+  // ── Unified persistence ──
   useEffect(() => {
     if (!cloudReady) return;
-
-    // Avoid double-sync on first mount when cloud data didn't change
-    if (!initialSyncDone.current) {
-      initialSyncDone.current = true;
-    }
-
+    if (!initialSyncDone.current) { initialSyncDone.current = true; }
     const newData = {
-      username: DEFAULT_USERNAME,
-      level: 0,
-      xp,
-      energy,
-      tasks,
-      actions: dailyRecords,
-      history: dailyStats,
-      timeRecords,
-      updatedAt: "",
+      username: DEFAULT_USERNAME, level: 0, xp, energy, tasks,
+      actions: dailyRecords, history: dailyStats, timeRecords, updatedAt: "",
     };
-
     saveData(newData);
     syncToSupabase(newData);
   }, [tasks, xp, energy, dailyRecords, dailyStats, timeRecords, cloudReady]);
@@ -274,10 +192,7 @@ function App() {
   }, [hasRunningTimer]);
 
   // ── Derived: today stats ──
-  const todayRecords = useMemo(
-    () => dailyRecords[todayKey()] ?? [],
-    [dailyRecords]
-  );
+  const todayRecords = useMemo(() => dailyRecords[todayKey()] ?? [], [dailyRecords]);
 
   const todayTimeRecords = useMemo(
     () => timeRecords.filter((r) => new Date(r.startTime).toDateString() === todayKey()),
@@ -313,55 +228,35 @@ function App() {
     const last7 = getLast7Days();
     const entries = last7.map((k) => ({ key: k, stat: dailyStats[k] ?? null }));
     const hasData = entries.some((e) => e.stat !== null);
-
     const totalTasks = entries.reduce((s, e) => s + (e.stat?.completedTasks ?? 0), 0);
     const totalActions = entries.reduce((s, e) => s + (e.stat?.minimalActionCount ?? 0), 0);
     const totalXp = entries.reduce((s, e) => s + (e.stat?.xpGained ?? 0), 0);
-
     const eCounts = { low: 0, normal: 0, high: 0 };
     entries.forEach((e) => { if (e.stat?.energy) eCounts[e.stat.energy]++; });
-
     let dominant = "normal" as "low" | "normal" | "high";
     let maxC = 0;
-    for (const [k, c] of Object.entries(eCounts)) {
-      if (c > maxC) { maxC = c; dominant = k as "low" | "normal" | "high"; }
-    }
-
+    for (const [k, c] of Object.entries(eCounts)) { if (c > maxC) { maxC = c; dominant = k as "low" | "normal" | "high"; } }
     const totalPts = Object.values(eCounts).reduce((a, b) => a + b, 0) || 1;
     const energyPct = {
       low: Math.round((eCounts.low / totalPts) * 100),
       normal: Math.round((eCounts.normal / totalPts) * 100),
       high: Math.round((eCounts.high / totalPts) * 100),
     };
-
     const totalTime: Record<string, number> = {};
     for (const cat of TIME_CATEGORIES) totalTime[cat.type] = 0;
     entries.forEach((e) => {
       if (e.stat?.timeMinutes) {
-        for (const cat of TIME_CATEGORIES) {
-          totalTime[cat.type] += e.stat.timeMinutes[cat.type] ?? 0;
-        }
+        for (const cat of TIME_CATEGORIES) { totalTime[cat.type] += e.stat.timeMinutes[cat.type] ?? 0; }
       }
     });
-
     const trends = entries.map((e) => ({
-      dateKey: e.key,
-      date: formatShortDate(e.key),
-      xp: e.stat?.xpGained ?? 0,
-      tasks: e.stat?.completedTasks ?? 0,
-      hasData: e.stat !== null,
+      dateKey: e.key, date: formatShortDate(e.key),
+      xp: e.stat?.xpGained ?? 0, tasks: e.stat?.completedTasks ?? 0, hasData: e.stat !== null,
     }));
-
     return {
-      dateRange: formatDateRange(last7),
-      totalTasks, totalActions, totalXp,
-      streak: calculateStreak(dailyStats),
-      dominantEnergy: dominant,
-      energyCounts: eCounts,
-      energyPct,
-      totalTime,
-      trends,
-      hasData,
+      dateRange: formatDateRange(last7), totalTasks, totalActions, totalXp,
+      streak: calculateStreak(dailyStats), dominantEnergy: dominant,
+      energyCounts: eCounts, energyPct, totalTime, trends, hasData,
     };
   }, [dailyStats]);
 
@@ -373,15 +268,13 @@ function App() {
   }, [todayStats, cloudReady]);
 
   // ── Derived: UI ──
-  const completedCount = todayStats.completedTasks;
-  const totalCount = tasks.length;
   const totalXp = calculateTotalXp(dailyStats, todayStats.xpGained);
   const level = Math.floor(totalXp / 100) + 1;
   const currentLevelXp = totalXp % 100;
   const progressPercent = Math.min(currentLevelXp, 100);
 
-  const historyKey = dateInputToKey(historyDate);
-  const historyStats = dailyStats[historyKey] ?? null;
+  const isRunning = (type: string) =>
+    todayTimeRecords.some((r) => r.type === type && !r.endTime);
 
   // ── Handlers ──
   const addTask = async () => {
@@ -417,14 +310,11 @@ function App() {
   };
 
   const doMinimalAction = (action: string) => {
-    const now = new Date();
-    const key = now.toDateString();
+    const nowMs = new Date();
+    const key = nowMs.toDateString();
     setDailyRecords((prev) => ({
       ...prev,
-      [key]: [
-        ...(prev[key] ?? []),
-        { id: now.getTime(), action, timestamp: now.toISOString(), xp: MINIMAL_ACTION_XP },
-      ],
+      [key]: [...(prev[key] ?? []), { id: nowMs.getTime(), action, timestamp: nowMs.toISOString(), xp: MINIMAL_ACTION_XP }],
     }));
     setXp((p) => p + MINIMAL_ACTION_XP);
   };
@@ -441,316 +331,57 @@ function App() {
 
   const startTimer = (type: string) => {
     if (todayTimeRecords.some((r) => r.type === type && !r.endTime)) return;
-    const now = new Date();
-    setTimeRecords((prev) => [...prev, { id: now.getTime(), type, startTime: now.toISOString(), endTime: "", duration: 0 }]);
+    const n = new Date();
+    setTimeRecords((prev) => [...prev, { id: n.getTime(), type, startTime: n.toISOString(), endTime: "", duration: 0 }]);
   };
 
   const stopTimer = (type: string) => {
-    const nowMs = Date.now();
+    const n = Date.now();
     setTimeRecords((prev) => {
       for (let i = prev.length - 1; i >= 0; i--) {
         const r = prev[i];
         if (r.type === type && !r.endTime) {
-          const endTime = new Date(nowMs).toISOString();
-          const duration = Math.max(1, Math.round((nowMs - new Date(r.startTime).getTime()) / 60000));
-          const updated = [...prev];
-          updated[i] = { ...r, endTime, duration };
-          return updated;
+          const endTime = new Date(n).toISOString();
+          const duration = Math.max(1, Math.round((n - new Date(r.startTime).getTime()) / 60000));
+          const u = [...prev];
+          u[i] = { ...r, endTime, duration };
+          return u;
         }
       }
       return prev;
     });
   };
 
-  const isRunning = (type: string) =>
-    todayTimeRecords.some((r) => r.type === type && !r.endTime);
-
   // ── Render ──
   return (
     <div className="app">
       {activeTab === "today" ? (
-        <>
-          <header className="header">
-            <h1>今日行动</h1>
-            <p className="subtitle">{completedCount}/{totalCount} 已完成</p>
-          </header>
-
-          <section className="energy-section">
-            <div className="energy-options">
-              {ENERGY_OPTIONS.map((opt) => (
-                <button key={opt.key} className={`energy-btn ${energy === opt.key ? "active" : ""}`}
-                  onClick={() => setEnergy(opt.key)}>
-                  <span className="energy-icon">{opt.icon}</span>
-                  <span className="energy-label">{opt.label}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          <section className="level-section">
-            <div className="level-header">
-              <span className="level-badge">Lv.{level}</span>
-              <span className="xp-text">{currentLevelXp} / 100 XP</span>
-            </div>
-            <div className="xp-bar">
-              <div className="xp-bar-fill" style={{ width: `${progressPercent}%` }} />
-            </div>
-          </section>
-
-          <section className="summary-section">
-            <h2 className="section-title">每日总结</h2>
-            <div className="summary-grid">
-              <div className="summary-item">
-                <span className="summary-value">{todayStats.completedTasks}</span>
-                <span className="summary-label">完成任务</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-value">{todayStats.minimalActionCount}</span>
-                <span className="summary-label">最小行动</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-value">+{todayStats.xpGained}</span>
-                <span className="summary-label">获得 XP</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-value">{streak} 天</span>
-                <span className="summary-label">连续行动</span>
-              </div>
-            </div>
-          </section>
-
-          <section className="time-section">
-            <h2 className="section-title">时间记录</h2>
-            <div className="time-list">
-              {TIME_CATEGORIES.map((cat) => (
-                <div key={cat.type} className="time-item">
-                  <span className="time-category">{cat.icon} {cat.type}</span>
-                  <span className="time-duration">{todayStats.timeMinutes[cat.type]} 分钟</span>
-                  {isRunning(cat.type) ? (
-                    <button className="time-btn stop" onClick={() => stopTimer(cat.type)}>结束</button>
-                  ) : (
-                    <button className="time-btn start" onClick={() => startTimer(cat.type)}>开始</button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="minimal-section">
-            <h2 className="section-title">立即开始一个最小行动</h2>
-            <div className="minimal-grid">
-              {MINIMAL_ACTIONS.map((action) => (
-                <button key={action} className="minimal-btn" onClick={() => doMinimalAction(action)}>
-                  {action} +{MINIMAL_ACTION_XP}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {todayRecords.length > 0 && (
-            <section className="records-section">
-              <h2 className="section-title">
-                今日最小行动记录
-                <span className="records-count"> ({todayRecords.length})</span>
-              </h2>
-              <div className="records-list">
-                {todayRecords.map((record) => (
-                  <div key={record.id} className="record-item">
-                    <span className="record-time">{formatTime(record.timestamp)}</span>
-                    <span className="record-action">{record.action}</span>
-                    <span className="record-xp">+{record.xp}XP</span>
-                    <button className="record-delete" onClick={() => deleteRecord(record.id)} title="撤销">&times;</button>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          <div className="add-task">
-            <input type="text" placeholder="添加新行动..." value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addTask()} />
-            <button onClick={addTask}>添加</button>
-          </div>
-
-          <ul className="task-list">
-            {tasks.map((task) => (
-              <li key={task.id} className={task.completed ? "completed" : ""}>
-                <label>
-                  <input type="checkbox" checked={task.completed} onChange={() => toggleTask(task.id)} />
-                  <span className="task-text">{task.text}</span>
-                  <span className="task-xp">+{getTaskXp(task.text)}</span>
-                </label>
-                <button className="delete" onClick={() => deleteTask(task.id)} title="删除任务">&times;</button>
-              </li>
-            ))}
-          </ul>
-        </>
+        <TodayPage
+          energy={energy} setEnergy={setEnergy}
+          level={level} currentLevelXp={currentLevelXp} progressPercent={progressPercent}
+          todayStats={todayStats} streak={streak}
+          isRunning={isRunning} startTimer={startTimer} stopTimer={stopTimer}
+          todayRecords={todayRecords} deleteRecord={deleteRecord}
+          doMinimalAction={doMinimalAction}
+          tasks={tasks} input={input} setInput={setInput}
+          addTask={addTask} toggleTask={toggleTask} deleteTask={deleteTask}
+          getTaskXp={getTaskXp}
+        />
       ) : activeTab === "history" ? (
-        <>
-          <header className="header">
-            <h1>历史记录</h1>
-          </header>
-
-          <div className="history-date-picker">
-            <input type="date" value={historyDate}
-              onChange={(e) => setHistoryDate(e.target.value)}
-              max={todayStr} />
-          </div>
-
-          {historyStats ? (
-            <section className="history-card">
-              <div className="history-energy">
-                <span className="history-energy-icon">{ENERGY_ICON_MAP[historyStats.energy]}</span>
-                <span className="history-energy-label">{ENERGY_LABEL_MAP[historyStats.energy]}</span>
-              </div>
-              <div className="history-stats-grid">
-                <div className="history-stat">
-                  <span className="history-stat-value">{historyStats.completedTasks}</span>
-                  <span className="history-stat-label">完成任务</span>
-                </div>
-                <div className="history-stat">
-                  <span className="history-stat-value">{historyStats.minimalActionCount}</span>
-                  <span className="history-stat-label">最小行动</span>
-                </div>
-                <div className="history-stat">
-                  <span className="history-stat-value">+{historyStats.xpGained}</span>
-                  <span className="history-stat-label">获得 XP</span>
-                </div>
-              </div>
-              {historyStats.timeMinutes && (
-                <div className="history-time-dist">
-                  <div className="history-time-title">时间分配</div>
-                  <div className="history-time-grid">
-                    {TIME_CATEGORIES.map((cat) => (
-                      <div key={cat.type} className="history-time-cell">
-                        <span className="history-time-cell-icon">{cat.icon} {cat.type}</span>
-                        <span className="history-time-cell-value">{historyStats.timeMinutes[cat.type] ?? 0} 分钟</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </section>
-          ) : (
-            <p className="history-empty">该日期暂无数据</p>
-          )}
-        </>
+        <HistoryPage
+          dailyStats={dailyStats}
+          historyDate={historyDate} setHistoryDate={setHistoryDate}
+          todayStr={todayStr}
+        />
+      ) : activeTab === "weekly" ? (
+        <WeeklyPage weeklyStats={weeklyStats} />
       ) : (
-        <>
-          <header className="header">
-            <h1>周报</h1>
-          </header>
-
-          {weeklyStats.hasData ? (
-            <>
-              <section className="weekly-period">{weeklyStats.dateRange}</section>
-
-              <section className="weekly-card">
-                <h2 className="weekly-card-title">本周概览</h2>
-                <div className="weekly-grid">
-                  <div className="weekly-stat">
-                    <span className="weekly-stat-value">{weeklyStats.totalTasks}</span>
-                    <span className="weekly-stat-label">完成任务</span>
-                  </div>
-                  <div className="weekly-stat">
-                    <span className="weekly-stat-value">{weeklyStats.totalActions}</span>
-                    <span className="weekly-stat-label">最小行动</span>
-                  </div>
-                  <div className="weekly-stat">
-                    <span className="weekly-stat-value">+{weeklyStats.totalXp}</span>
-                    <span className="weekly-stat-label">获得 XP</span>
-                  </div>
-                  <div className="weekly-stat">
-                    <span className="weekly-stat-value">{weeklyStats.streak} 天</span>
-                    <span className="weekly-stat-label">连续行动</span>
-                  </div>
-                </div>
-              </section>
-
-              <section className="weekly-card">
-                <h2 className="weekly-card-title">状态分析</h2>
-                <div className="weekly-energy-row">
-                  <span className="weekly-energy-icon">{ENERGY_ICON_MAP[weeklyStats.dominantEnergy]}</span>
-                  <span>本周平均：{ENERGY_LABEL_MAP[weeklyStats.dominantEnergy]}</span>
-                </div>
-                <div className="weekly-energy-bars">
-                  <div className="weekly-energy-bar-row">
-                    <span className="weekly-energy-bar-label">低能量</span>
-                    <div className="weekly-energy-bar-track">
-                      <div className="weekly-energy-bar-fill low" style={{width: `${weeklyStats.energyPct.low}%`}} />
-                    </div>
-                    <span className="weekly-energy-bar-num">{weeklyStats.energyCounts.low}天</span>
-                  </div>
-                  <div className="weekly-energy-bar-row">
-                    <span className="weekly-energy-bar-label">普通</span>
-                    <div className="weekly-energy-bar-track">
-                      <div className="weekly-energy-bar-fill normal" style={{width: `${weeklyStats.energyPct.normal}%`}} />
-                    </div>
-                    <span className="weekly-energy-bar-num">{weeklyStats.energyCounts.normal}天</span>
-                  </div>
-                  <div className="weekly-energy-bar-row">
-                    <span className="weekly-energy-bar-label">高能量</span>
-                    <div className="weekly-energy-bar-track">
-                      <div className="weekly-energy-bar-fill high" style={{width: `${weeklyStats.energyPct.high}%`}} />
-                    </div>
-                    <span className="weekly-energy-bar-num">{weeklyStats.energyCounts.high}天</span>
-                  </div>
-                </div>
-              </section>
-
-              <section className="weekly-card">
-                <h2 className="weekly-card-title">时间分配</h2>
-                <div className="weekly-time-list">
-                  {TIME_CATEGORIES.map((cat) => (
-                    <div key={cat.type} className="weekly-time-item">
-                      <span className="weekly-time-cat">{cat.icon} {cat.type}</span>
-                      <span className="weekly-time-value">{formatMinutes(weeklyStats.totalTime[cat.type])}</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <section className="weekly-card">
-                <h2 className="weekly-card-title">每日趋势</h2>
-                <div className="weekly-trend-list">
-                  {weeklyStats.trends.map((t) => (
-                    <div key={t.dateKey} className={`weekly-trend-item${t.hasData ? "" : " empty"}`}>
-                      <span className="weekly-trend-date">{t.date}</span>
-                      <span className="weekly-trend-xp">+{t.xp}XP</span>
-                      <span className="weekly-trend-tasks">{t.tasks}个任务</span>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </>
-          ) : (
-            <p className="weekly-empty">暂无历史数据</p>
-          )}
-        </>
+        <ProfilePage />
       )}
-
-      <nav className="bottom-nav">
-        <button className={`nav-btn ${activeTab === "today" ? "active" : ""}`}
-          onClick={() => setActiveTab("today")}>
-          今日
-        </button>
-        <button className={`nav-btn ${activeTab === "weekly" ? "active" : ""}`}
-          onClick={() => setActiveTab("weekly")}>
-          周报
-        </button>
-        <button className={`nav-btn ${activeTab === "history" ? "active" : ""}`}
-          onClick={() => setActiveTab("history")}>
-          历史
-        </button>
-      </nav>
+      <BottomNav activeTab={activeTab} onChange={setActiveTab} />
     </div>
   );
 }
 
 export default App;
-
-
-
-
 
