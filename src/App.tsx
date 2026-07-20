@@ -37,9 +37,6 @@ const TIME_CATEGORIES = [
 ];
 
 // 鈹€鈹€ Helpers 鈹€鈹€
-function getTaskXp(text: string): number {
-  return TASK_XP_MAP[text] ?? CUSTOM_TASK_XP;
-}
 
 function todayKey() {
   return new Date().toDateString();
@@ -157,6 +154,7 @@ function App() {
           saveData({
             username: DEFAULT_USERNAME, level: 0, xp: local.xp, energy: local.energy,
             tasks: local.tasks, actions: local.actions, history: local.history, timeRecords: local.timeRecords,
+    dailyTaskRecords: local.dailyTaskRecords ?? {},
        updatedAt: "",
           });
         }
@@ -295,30 +293,43 @@ function App() {
     setInput("");
   };
 
-  const toggleTask = (id: number) => {
-    setTasks((prev) => {
-      const task = prev.find((t) => t.id === id);
-      if (!task) return prev;
-      const delta = task.completed ? -getTaskXp(task.text) : getTaskXp(task.text);
-      const newCompleted = !task.completed;
-      supabase.from("tasks").update({ completed: newCompleted }).eq("id", id)
-        .then(({ error }) => { if (error) console.error("浠诲姟鏇存柊澶辫触:", error); });
-      setXp((p) => Math.max(0, p + delta));
-      return prev.map((t) => t.id === id ? { ...t, completed: newCompleted } : t);
-    });
+    const toggleTask = (id: number) => {
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+    const todayStr = new Date().toISOString().split("T")[0];
+    const record = todayCompletionRecords.find((r) => r.taskId === id);
+    if (record?.completed) {
+      setXp((p) => Math.max(0, p - task.xp));
+      setDailyTaskRecords((prev: Record<string, DailyTaskRecord[]>) => ({
+        ...prev, [todayStr]: (prev[todayStr] ?? []).map((r) => r.taskId === id ? { ...r, completed: false } : r),
+      }));
+    } else {
+      setXp((p) => p + task.xp);
+      if (record) {
+        setDailyTaskRecords((prev: Record<string, DailyTaskRecord[]>) => ({
+          ...prev, [todayStr]: (prev[todayStr] ?? []).map((r) => r.taskId === id ? { ...r, completed: true } : r),
+        }));
+      } else {
+        setDailyTaskRecords((prev: Record<string, DailyTaskRecord[]>) => ({
+          ...prev, [todayStr]: [...(prev[todayStr] ?? []), { taskId: id, date: todayStr, completed: true }],
+        }));
+      }
+    }
   };
-
   const deleteTask = (id: number) => {
-    setTasks((prev) => {
-      const task = prev.find((t) => t.id === id);
-      supabase.from("tasks").delete().eq("id", id)
-        .then(({ error }) => { if (error) console.error("浠诲姟鍒犻櫎澶辫触:", error); });
-      if (task?.completed) setXp((p) => Math.max(0, p - getTaskXp(task.text)));
-      return prev.filter((t) => t.id !== id);
-    });
+    const task = tasks.find((t) => t.id === id);
+    if (!task) return;
+    const todayStr = new Date().toISOString().split("T")[0];
+    const record = todayCompletionRecords.find((r) => r.taskId === id);
+    if (record?.completed) setXp((p) => Math.max(0, p - task.xp));
+    setTasks((prev) => prev.filter((t) => t.id !== id));
+    setDailyTaskRecords((prev: Record<string, DailyTaskRecord[]>) => ({
+      ...prev, [todayStr]: (prev[todayStr] ?? []).filter((r) => r.taskId !== id),
+    }));
+    supabase.from("tasks").delete().eq("id", id)
+      .then(({ error }) => { if (error) console.error("任务删除失败:", error); });
   };
-
-  const doMinimalAction = (action: string) => {
+const doMinimalAction = (action: string) => {
     const nowMs = new Date();
     const key = nowMs.toDateString();
     setDailyRecords((prev) => ({
@@ -376,6 +387,7 @@ function App() {
           addTask={addTask} toggleTask={toggleTask} deleteTask={deleteTask}
           
           doMinimalAction={doMinimalAction}
+          dailyTaskRecords={dailyTaskRecords}
         />
       ) : activeTab === "growth" ? (
         <GrowthPage
