@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import "./App.css";
 import { supabase } from "./supabase";
 (window as any).supabase = supabase;
@@ -117,10 +117,8 @@ function App() {
           supabase.from("daily_stats").select("*").order("date"),
         ]);
         if (cancelled) return;
-        let cloudDataApplied = false;
         if (tasksResult.data && tasksResult.data.length > 0) {
           setTasks(tasksResult.data.map((t: any) => ({ id: t.id, text: t.text, xp: TASK_XP_MAP[t.text as string] ?? CUSTOM_TASK_XP })));
-          cloudDataApplied = true;
         }
         if (statsResult.data && statsResult.data.length > 0) {
           const history: Record<string, DayStats> = {};
@@ -146,18 +144,19 @@ function App() {
                 setDailyRecords(p => ({ ...p, [new Date().toDateString()]: ca }));
               }
             }
+            if (todayRow.time_minutes?.__task_completions) {
+              const ids = todayRow.time_minutes.__task_completions;
+              if (Array.isArray(ids) && ids.length > 0) {
+                const td = getLocalDateString();
+                setDailyTaskRecords(p => ({
+                  ...p,
+                  [td]: ids.map((taskId) => ({ taskId, date: td, completed: true })),
+                }));
+              }
+            }
           }
-          cloudDataApplied = true;
         }
-        if (cloudDataApplied) {
-          const local = loadData();
-          saveData({
-            username: DEFAULT_USERNAME, level: 0, xp: local.xp, energy: local.energy,
-            tasks: local.tasks, actions: local.actions, history: local.history, timeRecords: local.timeRecords,
-    dailyTaskRecords: local.dailyTaskRecords ?? {},
-       updatedAt: "",
-          });
-        }
+
       } catch (err) {
         console.error("[cloud] Failed to load from Supabase:", err);
       } finally {
@@ -286,10 +285,10 @@ function App() {
   const addTask = async () => {
     if (!input.trim()) return;
     const xpVal = TASK_XP_MAP[input.trim()] ?? CUSTOM_TASK_XP;
-    const newTask: Task = { id: Date.now(), text: input.trim(), xp: xpVal };
+    const { data, error } = await supabase.from("tasks").insert({ text: input.trim() }).select().single();
+    if (error) { console.error("浠诲姟淇濆瓨澶辫触:", error); return; }
+    const newTask: Task = { id: data.id, text: data.text, xp: xpVal };
     setTasks([...tasks, newTask]);
-    const { error } = await supabase.from("tasks").insert({ id: newTask.id, text: newTask.text });
-    if (error) console.error("浠诲姟淇濆瓨澶辫触:", error);
     setInput("");
   };
 

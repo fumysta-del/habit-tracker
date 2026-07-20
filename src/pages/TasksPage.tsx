@@ -1,3 +1,4 @@
+import { getLocalDateString } from "../storage";
 import { TaskInput } from "../components/TaskInput";
 import { TaskList } from "../components/TaskList";
 import { DailyActions } from "../components/DailyActions";
@@ -11,7 +12,7 @@ interface TasksPageProps {
 }
 
 export function TasksPage(p: TasksPageProps) {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getLocalDateString();
   const todayRecords = p.dailyTaskRecords[today] ?? [];
   const tasksWithCompletion = p.tasks.map((t) => ({
     ...t,
