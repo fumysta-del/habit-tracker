@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
-const W = 320;
-const H = 200;
+const W = 520;
+const H = 320;
 const N = 120;
 
 const STAGES = [
@@ -47,10 +47,13 @@ function computeYs(key: string): number[] {
 }
 
 function buildPath(ys: number[]): string {
-  const step = W / (N - 1);
-  return ys.map((y, i) =>
-    (i === 0 ? "M" : "L") + (i * step).toFixed(1) + " " + (H - y * H).toFixed(1)
-  ).join("");
+  const PL = 20, PT = 25;
+  const uW = W - 2 * PL, uH = H - 2 * PT;
+  return ys.map((y, i) => {
+    const x = PL + (i / (N - 1)) * uW;
+    const sy = PT + (1 - y) * uH;
+    return (i === 0 ? "M" : "L") + x.toFixed(1) + " " + sy.toFixed(1);
+  }).join("");
 }
 
 function getPos(prog: number, ys: number[]): { x: number; y: number } {
@@ -59,14 +62,16 @@ function getPos(prog: number, ys: number[]): { x: number; y: number } {
   const frac = di - idx;
   const ni = Math.min(idx + 1, N - 1);
   const yVal = ys[idx] * (1 - frac) + ys[ni] * frac;
-  return { x: prog * W, y: H - yVal * H };
+  const PL = 20, PT = 25;
+  const uW = W - 2 * PL, uH = H - 2 * PT;
+  return { x: PL + prog * uW, y: PT + (1 - yVal) * uH };
 }
 
 const PARTICLE_CFG = [
-  { cx: 50,  cy: 165, cls: "p1" },
-  { cx: 130, cy: 150, cls: "p2" },
-  { cx: 210, cy: 155, cls: "p3" },
-  { cx: 280, cy: 145, cls: "p4" },
+  { cx: 80,  cy: 265, cls: "p1" },
+  { cx: 210, cy: 240, cls: "p2" },
+  { cx: 340, cy: 250, cls: "p3" },
+  { cx: 460, cy: 230, cls: "p4" },
 ];
 
 export function GrowthCurveDemo() {
@@ -139,15 +144,15 @@ export function GrowthCurveDemo() {
   const demoLevel = 3;
 
   // Position level label adaptively
-  const labelX = dot.x < W * 0.7 ? dot.x + 12 : dot.x - 48;
-  const labelY = Math.max(16, dot.y - 12);
+  const labelX = dot.x < W * 0.7 ? dot.x + 14 : dot.x - 52;
+  const labelY = Math.max(25, dot.y - 14);
 
   return (
     <section className="growth-demo">
       <h2 className="section-title">成长轨迹</h2>
 
       <div className="growth-demo-card">
-        <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 520 320" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <radialGradient id="bgGlow" cx="50%" cy="45%" r="55%">
               <stop offset="0%" stopColor="#c4956a" stopOpacity="0.05" />
@@ -159,7 +164,7 @@ export function GrowthCurveDemo() {
               <stop offset="100%" stopColor="#f0d07a" stopOpacity="1" />
             </linearGradient>
             <filter id="dotGlow">
-              <feGaussianBlur stdDeviation="3" result="b" />
+              <feGaussianBlur stdDeviation="4" result="b" />
               <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
           </defs>
@@ -179,11 +184,11 @@ export function GrowthCurveDemo() {
             strokeLinecap="round" strokeLinejoin="round" />
 
           {/* Layer 4: Dot trail */}
-          <circle cx={trail2.x} cy={trail2.y} r="2" fill="#c4956a" opacity="0.08" />
-          <circle cx={trail1.x} cy={trail1.y} r="3" fill="#c4956a" opacity="0.2" />
+          <circle cx={trail2.x} cy={trail2.y} r="3" fill="#c4956a" opacity="0.08" />
+          <circle cx={trail1.x} cy={trail1.y} r="4" fill="#c4956a" opacity="0.2" />
 
           {/* Layer 5: Main dot */}
-          <circle cx={dot.x} cy={dot.y} r="4" fill="#f0d07a" filter="url(#dotGlow)" opacity="0.9" />
+          <circle cx={dot.x} cy={dot.y} r="5" fill="#f0d07a" filter="url(#dotGlow)" opacity="0.9" />
 
           {/* Layer 6: Level label */}
           <rect x={labelX - 4} y={labelY - 8} width={44} height={16}

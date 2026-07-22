@@ -876,8 +876,8 @@
   background: transparent;
   border: 1px solid rgba(196,149,106,0.05);
   border-radius: var(--radius-xl);
-  padding: var(--space-xl) var(--space-lg);
-  height: 280px;
+  padding: var(--space-lg) var(--space-md);
+  height: 320px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -903,7 +903,7 @@
 }.growth-demo-card svg {
   display: block;
   width: 100%;
-  max-width: 320px;
+  max-width: 520px;
   height: auto;
   overflow: visible;
 }
