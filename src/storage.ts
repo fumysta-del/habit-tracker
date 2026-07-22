@@ -120,10 +120,12 @@ export function loadData(): AppData {
           data.tasks = [...DEFAULT_TASKS];
         } else {
           for (const dt of DEFAULT_TASKS) {
-            if (!data.tasks.some((t) => t.id === dt.id)) {
-              data.tasks.push({ ...dt });
+            if (!data.tasks.some((t) => t.text === dt.text)) {
+              const maxId = data.tasks.reduce((m, t) => Math.max(m, t.id), 0);
+              data.tasks.push({ id: maxId + 1, text: dt.text, xp: dt.xp });
             }
           }
+          console.log("[TASKS] After merge:", data.tasks.length, "tasks");
         }
       if (!data.timeRecords) data.timeRecords = [];
       if (!data.dailyTaskRecords) data.dailyTaskRecords = {};
