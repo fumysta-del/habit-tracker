@@ -872,21 +872,35 @@
   padding-bottom: var(--space-3xl);
 }
 .growth-demo-card {
-  background: rgba(255,255,255,0.82);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(232,226,216,0.55);
+  position: relative;
+  background: transparent;
+  border: 1px solid rgba(196,149,106,0.05);
   border-radius: var(--radius-xl);
-  padding: var(--space-lg) var(--space-lg);
-  height: 240px;
+  padding: var(--space-xl) var(--space-lg);
+  height: 280px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: var(--space-md);
   box-sizing: border-box;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 20px 60px rgba(196,149,106,0.04);
 }
-.growth-demo-card svg {
+.growth-demo-card::before {
+  content: '';
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 240px;
+  background: radial-gradient(circle at 50% 40%, rgba(196,149,106,0.06), transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+.growth-demo-card > * {
+  position: relative;
+  z-index: 1;
+}.growth-demo-card svg {
   display: block;
   width: 100%;
   max-width: 320px;
