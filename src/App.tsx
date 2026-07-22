@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import "./App.css";
 import { supabase } from "./supabase";
 (window as any).supabase = supabase;
@@ -161,6 +161,36 @@ function App() {
             }
           }
         }
+
+        // Load time_records from cloud
+        try {
+          const trResult = await supabase.from("time_records").select("*");
+          if (trResult.data && trResult.data.length > 0) {
+            setTimeRecords(trResult.data.map((r: any) => ({
+              id: r.id,
+              type: r.type,
+              startTime: r.start_time,
+              endTime: r.end_time,
+              duration: r.duration,
+            })));
+          }
+        } catch (e) { console.error("[SYNC] time_records load failed:", e); }
+
+        // Load daily_tasks for today
+        try {
+          const td = getLocalDateString();
+          const dtResult = await supabase.from("daily_tasks").select("*").eq("date", td);
+          if (dtResult.data && dtResult.data.length > 0) {
+            setDailyTaskRecords((prev) => ({
+              ...prev,
+              [td]: dtResult.data.map((r: any) => ({
+                taskId: r.task_id,
+                date: r.date,
+                completed: r.completed,
+              })),
+            }));
+          }
+        } catch (e) { console.error("[SYNC] daily_tasks load failed:", e); }
 
             } catch (err) {
         console.error("[cloud] Failed to load from Supabase:", err);
