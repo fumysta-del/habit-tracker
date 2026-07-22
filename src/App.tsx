@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+﻿import { useState, useEffect, useMemo, useRef } from "react";
 import "./App.css";
 import { supabase } from "./supabase";
 (window as any).supabase = supabase;
@@ -23,18 +23,18 @@ import { BottomNav } from "./components/BottomNav";
 
 // 鈹€鈹€ Constants 鈹€鈹€
 const TASK_XP_MAP: Record<string, number> = {
-  "杩愬姩10鍒嗛挓": 20,
-  "瀛︿範30鍒嗛挓": 30,
-  "鏁寸悊妗岄潰": 5,
+  "运动10分钟": 20,
+  "学习30分钟": 30,
+  "整理桌面": 5,
 };
 const CUSTOM_TASK_XP = 10;
 const MINIMAL_ACTION_XP = 3;
 
 const TIME_CATEGORIES = [
-  { type: "娓告垙", icon: "馃幃" },
-  { type: "瀛︿範", icon: "馃摎" },
-  { type: "杩愬姩", icon: "馃弮" },
-  { type: "浼戞伅", icon: "馃泴" },
+  { type: "游戏", icon: "🎮" },
+  { type: "学习", icon: "📚" },
+  { type: "运动", icon: "🏃" },
+  { type: "休息", icon: "🛌" },
 ];
 
 // 鈹€鈹€ Helpers 鈹€鈹€
@@ -222,15 +222,28 @@ function App() {
     const minutes: Record<string, number> = {};
     for (const cat of TIME_CATEGORIES) minutes[cat.type] = 0;
     for (const r of todayTimeRecords) {
-      if (r.endTime) {
-        const dur = typeof r.duration === 'number' && !isNaN(r.duration) ? r.duration : 0;
-        minutes[r.type] += dur;
-      } else {
-        const startMs = new Date(r.startTime).getTime();
-        const elapsed = !isNaN(startMs) ? Math.max(0, Math.round((nowMs - startMs) / 60000)) : 0;
-        minutes[r.type] += elapsed;
-      }
+  if (!Object.prototype.hasOwnProperty.call(minutes, r.type)) {
+    console.warn("未知计时类型：", r.type);
+    continue;
+  }
+
+  let value = 0;
+
+  if (r.endTime) {
+    value =
+      Number.isFinite(r.duration) && r.duration >= 0
+        ? r.duration
+        : 0;
+  } else {
+    const startMs = new Date(r.startTime).getTime();
+
+    if (Number.isFinite(startMs)) {
+      value = Math.max(0, Math.round((nowMs - startMs) / 60000));
     }
+  }
+
+  minutes[r.type] = (minutes[r.type] ?? 0) + value;
+}
     return {
       completedTasks: todayCompletionRecords.filter((r) => r.completed).length,
       minimalActionCount: todayRecords.length,

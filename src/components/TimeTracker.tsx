@@ -7,7 +7,9 @@ export function TimeTracker({ timeMinutes, isRunning, onStart, onStop }: { timeM
         {CATEGORIES.map((cat) => (
           <div key={cat.type} className="time-item">
             <span className="time-category">{cat.icon} {cat.type}</span>
-            <span className="time-duration">{timeMinutes[cat.type]} 分钟</span>
+            <span className="time-duration">
+  {String(timeMinutes[cat.type])} 分钟
+</span>
             {isRunning(cat.type) ? (
               <button className="time-btn stop" onClick={() => onStop(cat.type)}>结束</button>
             ) : (
