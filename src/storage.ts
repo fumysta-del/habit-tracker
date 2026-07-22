@@ -115,6 +115,7 @@ export function loadData(): AppData {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const data = JSON.parse(raw) as AppData;
+      console.log("[LOAD] before merge tasks:", data.tasks);
       data.level = calculateLevel(data.xp);
       if (!data.tasks) {
           data.tasks = [...DEFAULT_TASKS];
@@ -126,7 +127,9 @@ export function loadData(): AppData {
             }
           }
           console.log("[TASKS] After merge:", data.tasks.length, "tasks");
-        }
+          console.log("[LOAD] after merge tasks:", data.tasks);
+          console.log("[LOAD] final tasks:", data.tasks);
+       }
       if (!data.timeRecords) data.timeRecords = [];
       if (!data.dailyTaskRecords) data.dailyTaskRecords = {};
       return data;
