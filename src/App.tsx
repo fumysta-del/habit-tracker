@@ -119,7 +119,17 @@ function App() {
         ]);
         if (cancelled) return;
         if (tasksResult.data && tasksResult.data.length > 0) {
-          setTasks(tasksResult.data.map((t: any) => ({ id: t.id, text: t.text, xp: TASK_XP_MAP[t.text as string] ?? CUSTOM_TASK_XP })));
+          const cloudTasks = tasksResult.data.map((t: any) => ({ id: t.id, text: t.text, xp: TASK_XP_MAP[t.text as string] ?? CUSTOM_TASK_XP }));
+          console.log("[TASK CLOUD]", cloudTasks);
+          console.log("[TASK LOCAL]", tasks);
+          const merged = [...tasks];
+          for (const ct of cloudTasks) {
+            if (!merged.some((t) => t.text === ct.text)) {
+              merged.push(ct);
+            }
+          }
+          console.log("[TASK FINAL]", merged);
+          setTasks(merged);
         }
         if (statsResult.data && statsResult.data.length > 0) {
           const history: Record<string, DayStats> = {};
