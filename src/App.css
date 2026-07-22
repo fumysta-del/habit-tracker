@@ -868,21 +868,25 @@
   to { stroke-dashoffset: var(--target-offset); }
 }/* ── Growth Curve Demo ── */
 .growth-demo {
+  animation: fadeUp 0.6s ease both;
   padding-bottom: var(--space-3xl);
 }
-.growth-demo-chart {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+.growth-demo-card {
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(232,226,216,0.55);
   border-radius: var(--radius-xl);
-  padding: var(--space-xl) var(--space-xl);
-  height: 260px;
+  padding: var(--space-lg) var(--space-lg);
+  height: 240px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: var(--space-md);
   box-sizing: border-box;
+  box-shadow: var(--shadow-sm);
 }
-.growth-demo-chart svg {
+.growth-demo-card svg {
   display: block;
   width: 100%;
   max-width: 320px;
@@ -898,16 +902,19 @@
   line-height: 20px;
   margin-bottom: var(--space-md);
   overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
-.growth-demo-buttons {
+.growth-demo-stages {
   display: flex;
   gap: var(--space-sm);
   height: 40px;
+  margin-bottom: var(--space-sm);
 }
 .gd-btn {
   flex: 1;
   min-width: 0;
-  padding: var(--space-sm) var(--space-sm);
+  padding: var(--space-sm) var(--space-xs);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
@@ -930,11 +937,48 @@
   background: var(--color-primary);
   color: var(--color-text-inverse);
 }
-.gd-auto {
-  flex: 0 0 64px;
+.growth-demo-autoplay {
+  display: flex;
+  justify-content: center;
+  height: 36px;
 }
-.gd-auto.active {
+.gd-play {
+  padding: var(--space-sm) var(--space-xl);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  font-family: var(--font-number);
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+  white-space: nowrap;
+}
+.gd-play:hover {
+  border-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+.gd-play.active {
   border-color: var(--color-primary);
   background: var(--color-primary);
   color: var(--color-text-inverse);
+}
+
+/* ── Particles ── */
+.particle {
+  animation: particleFloat 14s ease-in-out infinite;
+  opacity: 0;
+}
+.p1 { animation-delay: 0s; }
+.p2 { animation-delay: -4s; }
+.p3 { animation-delay: -8s; }
+.p4 { animation-delay: -2s; }
+
+@keyframes particleFloat {
+  0%, 100% { transform: translate(0, 0); opacity: 0; }
+  15% { opacity: 0.07; }
+  50% { transform: translate(6px, -18px); opacity: 0.05; }
+  85% { opacity: 0.06; }
+  100% { transform: translate(-4px, -24px); opacity: 0; }
 }
