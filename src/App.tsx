@@ -174,9 +174,10 @@ function App() {
               duration: r.duration,
             })));
           }
+          console.log("[SYNC] cloud time_records", trResult.data?.length ?? 0, "records");
         } catch (e) { console.error("[SYNC] time_records load failed:", e); }
 
-        // Load daily_tasks for today
+                // Load daily_tasks for today
         try {
           const td = getLocalDateString();
           const dtResult = await supabase.from("daily_tasks").select("*").eq("date", td);
@@ -190,6 +191,7 @@ function App() {
               })),
             }));
           }
+          console.log("[SYNC] cloud daily_tasks", dtResult.data?.length ?? 0, "records");
         } catch (e) { console.error("[SYNC] daily_tasks load failed:", e); }
 
             } catch (err) {
