@@ -47,7 +47,7 @@ function computeYs(key: string): number[] {
 }
 
 function buildPath(ys: number[]): string {
-  const PL = 40, PT = 30;
+  const PL = 72, PT = 45;
   const uW = W - 2 * PL, uH = H - 2 * PT;
   return ys.map((y, i) => {
     const x = PL + (i / (N - 1)) * uW;
@@ -62,7 +62,7 @@ function getPos(prog: number, ys: number[]): { x: number; y: number } {
   const frac = di - idx;
   const ni = Math.min(idx + 1, N - 1);
   const yVal = ys[idx] * (1 - frac) + ys[ni] * frac;
-  const PL = 40, PT = 30;
+  const PL = 72, PT = 45;
   const uW = W - 2 * PL, uH = H - 2 * PT;
   return { x: PL + prog * uW, y: PT + (1 - yVal) * uH };
 }
