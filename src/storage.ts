@@ -116,7 +116,15 @@ export function loadData(): AppData {
     if (raw) {
       const data = JSON.parse(raw) as AppData;
       data.level = calculateLevel(data.xp);
-      if (!data.tasks || data.tasks.length === 0) data.tasks = [...DEFAULT_TASKS];
+      if (!data.tasks) {
+          data.tasks = [...DEFAULT_TASKS];
+        } else {
+          for (const dt of DEFAULT_TASKS) {
+            if (!data.tasks.some((t) => t.id === dt.id)) {
+              data.tasks.push({ ...dt });
+            }
+          }
+        }
       if (!data.timeRecords) data.timeRecords = [];
       if (!data.dailyTaskRecords) data.dailyTaskRecords = {};
       return data;
