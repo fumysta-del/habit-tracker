@@ -1,140 +1,148 @@
 import { useState, useEffect, useRef } from "react";
 
-const W = 300;
+const W = 320;
 const H = 200;
-const N = 100;
+const N = 120;
 
-const LABELS: Record<string, string> = {
-  quadratic: "二次函数",
-  sine: "正弦波",
-  mixed: "混合过渡",
-  complex: "复杂曲线",
-};
+const STAGES = [
+  { key: "sprout", label: "萌芽", desc: "缓慢起步" },
+  { key: "grow",   label: "成长", desc: "稳定上升" },
+  { key: "break",  label: "突破", desc: "加速突破" },
+  { key: "bloom",  label: "绽放", desc: "圆满绽放" },
+];
 
-function getY(x: number, type: string, t: number): number {
-  const q = x * x;
-  const s = (Math.sin(x * Math.PI * 4) + 1) / 2;
-  switch (type) {
-    case "quadratic": return q;
-    case "sine": return s;
-    case "mixed": return (1 - t) * q + t * s;
-    case "complex":
-      return (Math.sin(x * Math.PI * 4) + 0.5 * Math.sin(x * Math.PI * 8) + 0.25 * Math.sin(x * Math.PI * 12)) / 1.75;
-    default: return q;
+function getY(x: number, key: string): number {
+  switch (key) {
+    case "sprout":
+      return 0.35 * x * x + 0.65 * (1 - Math.cos(x * Math.PI / 2));
+    case "grow":
+      return Math.pow(x, 1.3);
+    case "break":
+      return Math.pow(x, 0.7);
+    case "bloom":
+      return (1 - Math.cos(x * Math.PI)) / 2;
+    default:
+      return x * x;
   }
 }
 
-function computeYs(type: string, t: number): number[] {
-  return Array.from({ length: N }, (_, i) => getY(i / (N - 1), type, t));
+function computeYs(key: string): number[] {
+  return Array.from({ length: N }, (_, i) => {
+    const x = i / (N - 1);
+    const y = getY(x, key);
+    const env = 1 - Math.pow(Math.abs(x - 0.5) * 2, 2);
+    const noise = 0.01 * Math.sin(x * Math.PI * 7.1) * Math.sin(x * Math.PI * 2.3) * env;
+    return Math.max(0, Math.min(1, y + noise));
+  });
 }
 
 function buildPath(ys: number[]): string {
-  const step = W / (ys.length - 1);
+  const step = W / (N - 1);
   return ys.map((y, i) =>
-    `${i === 0 ? "M" : "L"} ${(i * step).toFixed(1)} ${(H - y * H).toFixed(1)}`
-  ).join(" ");
+    "" + (i === 0 ? "M" : "L") + (i * step).toFixed(1) + " " + (H - y * H).toFixed(1)
+  ).join("");
 }
 
 export function GrowthCurveDemo() {
-  const [curve, setCurve] = useState("quadratic");
-  const [mixT, setMixT] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [path, setPath] = useState(() => buildPath(computeYs("quadratic", 0)));
+  const [stage, setStage] = useState("sprout");
+  const [pathD, setPathD] = useState("");
+  const [dotX, setDotX] = useState(0);
+  const [dotY, setDotY] = useState(H);
+  const [autoPlay, setAutoPlay] = useState(false);
 
-  const displayRef = useRef(computeYs("quadratic", 0));
-  const targetRef = useRef(computeYs("quadratic", 0));
-  const rafRef = useRef(0);
+  const displayRef = useRef(computeYs("sprout"));
+  const targetRef = useRef(computeYs("sprout"));
+  const rAF = useRef(0);
+  const dotTime = useRef(0);
+  const autoTimer = useRef(0);
+  const autoIdx = useRef(0);
 
+  // Set target when stage changes
   useEffect(() => {
-    targetRef.current = computeYs(curve, mixT);
-  }, [curve, mixT]);
+    targetRef.current = computeYs(stage);
+  }, [stage]);
 
+  // Main animation loop: morph + dot
   useEffect(() => {
-    const animate = () => {
+    const tick = () => {
       const disp = displayRef.current;
       const tgt = targetRef.current;
-      let changed = false;
       for (let i = 0; i < N; i++) {
         const diff = tgt[i] - disp[i];
-        if (Math.abs(diff) > 0.001) {
-          disp[i] += diff * 0.06;
-          changed = true;
+        if (Math.abs(diff) > 0.0005) {
+          disp[i] += diff * 0.035;
         } else {
           disp[i] = tgt[i];
         }
       }
-      if (changed) {
-        setPath(buildPath(disp));
-        rafRef.current = requestAnimationFrame(animate);
-      }
-    };
-    rafRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [curve, mixT]);
+      setPathD(buildPath(disp));
 
-  useEffect(() => {
-    if (!playing) return;
-    const stages: { type: string; t?: number }[] = [
-      { type: "quadratic" },
-      { type: "mixed", t: 0.3 },
-      { type: "mixed", t: 0.7 },
-      { type: "sine" },
-      { type: "complex" },
-    ];
-    let idx = 0;
-    const tick = () => {
-      const s = stages[idx % stages.length];
-      setCurve(s.type);
-      if (s.t !== undefined) setMixT(s.t);
-      idx++;
-      rafRef.current = setTimeout(tick, 2500) as unknown as number;
+      dotTime.current = (dotTime.current + 1) % 99999;
+      const prog = ((dotTime.current * 0.003) % 1);
+      const di = prog * (N - 1);
+      const idx = Math.floor(di);
+      const frac = di - idx;
+      const ni = Math.min(idx + 1, N - 1);
+      const yVal = disp[idx] * (1 - frac) + disp[ni] * frac;
+      setDotX(prog * W);
+      setDotY(H - yVal * H);
+
+      rAF.current = requestAnimationFrame(tick);
     };
-    tick();
-    return () => clearTimeout(rafRef.current);
-  }, [playing]);
+    rAF.current = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rAF.current);
+  }, []);
+
+  // Auto play
+  useEffect(() => {
+    if (!autoPlay) {
+      clearTimeout(autoTimer.current);
+      return;
+    }
+    autoIdx.current = STAGES.findIndex((s) => s.key === stage);
+    const tick = () => {
+      autoIdx.current = (autoIdx.current + 1) % STAGES.length;
+      setStage(STAGES[autoIdx.current].key);
+      autoTimer.current = setTimeout(tick, 3000) as unknown as number;
+    };
+    autoTimer.current = setTimeout(tick, 3000) as unknown as number;
+    return () => clearTimeout(autoTimer.current);
+  }, [autoPlay]);
+
+  const cur = STAGES.find((s) => s.key === stage) ?? STAGES[0];
 
   return (
     <section className="growth-demo">
-      <h2 className="section-title">成长轨迹曲线 Demo</h2>
+      <h2 className="section-title">成长轨迹</h2>
       <div className="growth-demo-chart">
-        <svg viewBox={"0 0 " + W + " " + H} xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="curveGrad" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#c4956a" />
-              <stop offset="100%" stopColor="#e0c4a8" />
+            <linearGradient id="cg" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#c4956a" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#e0c4a8" stopOpacity="1" />
             </linearGradient>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="2" result="blur" />
-              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            <filter id="dotGlow">
+              <feGaussianBlur stdDeviation="2.5" result="b" />
+              <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
           </defs>
-          {[0, 0.25, 0.5, 0.75, 1].map((v) => (
-            <line key={v} x1={0} y1={H - v * H} x2={W} y2={H - v * H}
-              stroke="rgba(255,255,255,0.05)" strokeWidth="1" />
-          ))}
-          <path d={path} fill="none" stroke="url(#curveGrad)" strokeWidth="2.5"
-            filter="url(#glow)" strokeLinecap="round" strokeLinejoin="round" />
+          <path d={pathD} fill="none" stroke="url(#cg)" strokeWidth="2.5"
+            strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx={dotX} cy={dotY} r="4" fill="#c4956a" filter="url(#dotGlow)" opacity="0.85" />
         </svg>
       </div>
-      <div className="growth-demo-info">
-        {LABELS[curve]}{curve === "mixed" ? " (t = " + mixT.toFixed(2) + ")" : ""}
-      </div>
+      <div className="growth-demo-info">{cur.label} — {cur.desc}</div>
       <div className="growth-demo-buttons">
-        {Object.entries(LABELS).map(([key, label]) => (
-          <button key={key} className={"growth-demo-btn" + (curve === key ? " active" : "")}
-            onClick={() => { setCurve(key); setPlaying(false); }}>
-            {label}
+        {STAGES.map((s) => (
+          <button key={s.key}
+            className={"gd-btn" + (stage === s.key ? " active" : "")}
+            onClick={() => { setStage(s.key); setAutoPlay(false); }}>
+            {s.label}
           </button>
         ))}
-      </div>
-      <div className="growth-demo-row">
-        {curve === "mixed" && (
-          <input type="range" min="0" max="1" step="0.02" value={mixT}
-            onChange={(e) => setMixT(+e.target.value)} className="growth-demo-slider" />
-        )}
-        <button className={"growth-demo-btn demo-play" + (playing ? " active" : "")}
-          onClick={() => setPlaying(!playing)}>
-          {playing ? "⏹ 停止" : "▶ 自动播放"}
+        <button className={"gd-btn gd-auto" + (autoPlay ? " active" : "")}
+          onClick={() => setAutoPlay(!autoPlay)}>
+          {autoPlay ? "⏹" : "▶"} 自动
         </button>
       </div>
     </section>
