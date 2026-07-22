@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 
-const W = 720;
-const H = 360;
+const W = 1100;
+const H = 520;
 const N = 120;
 
 const STAGES = [
@@ -47,8 +47,8 @@ function computeYs(key: string): number[] {
 }
 
 function buildPath(ys: number[]): string {
-  const PL = 72, PT = 45;
-  const uW = W - 2 * PL, uH = H - 2 * PT;
+  const PL = 88, PT = 78, PB = 104;
+  const uW = W - 2 * PL, uH = H - PT - PB;
   return ys.map((y, i) => {
     const x = PL + (i / (N - 1)) * uW;
     const sy = PT + (1 - y) * uH;
@@ -62,16 +62,16 @@ function getPos(prog: number, ys: number[]): { x: number; y: number } {
   const frac = di - idx;
   const ni = Math.min(idx + 1, N - 1);
   const yVal = ys[idx] * (1 - frac) + ys[ni] * frac;
-  const PL = 72, PT = 45;
-  const uW = W - 2 * PL, uH = H - 2 * PT;
+  const PL = 88, PT = 78, PB = 104;
+  const uW = W - 2 * PL, uH = H - PT - PB;
   return { x: PL + prog * uW, y: PT + (1 - yVal) * uH };
 }
 
 const PARTICLE_CFG = [
-  { cx: 110, cy: 300, cls: "p1" },
-  { cx: 290, cy: 270, cls: "p2" },
-  { cx: 470, cy: 280, cls: "p3" },
-  { cx: 640, cy: 260, cls: "p4" },
+  { cx: 160, cy: 400, cls: "p1" },
+  { cx: 380, cy: 370, cls: "p2" },
+  { cx: 650, cy: 390, cls: "p3" },
+  { cx: 900, cy: 360, cls: "p4" },
 ];
 
 export function GrowthCurveDemo() {
@@ -149,10 +149,9 @@ export function GrowthCurveDemo() {
 
   return (
     <section className="growth-demo">
-      <h2 className="section-title">成长轨迹</h2>
-
-      <div className="growth-demo-card">
-        <svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg">
+      <div className="growth-demo-visual">
+        <h2 className="section-title" style={{position:"absolute",top:16,left:"50%",transform:"translateX(-50%)",zIndex:2,margin:0}}>成长轨迹</h2>
+        <svg viewBox="0 0 1100 520" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <radialGradient id="bgGlow" cx="50%" cy="45%" r="55%">
               <stop offset="0%" stopColor="#c4956a" stopOpacity="0.05" />
@@ -201,9 +200,8 @@ export function GrowthCurveDemo() {
             Lv.0{demoLevel}
           </text>
         </svg>
+        <div className="visual-info">{cur.label} · {cur.desc}</div>
       </div>
-
-      <div className="growth-demo-info">{cur.label} · {cur.desc}</div>
 
       <div className="growth-demo-stages">
         {STAGES.map((s) => (
