@@ -1,6 +1,4 @@
-import { ActionRecords } from "../components/ActionRecords";
-import { TimeTracker } from "../components/TimeTracker";
-import type { MinimalRecord, DayStats } from "../storage";
+import type { DayStats } from "../storage";
 
 const EICON: Record<string, string> = { low: "(( _ _ ))..zzzZZ", normal: "＜コ:彡", high: "^ ^" };
 const ELABEL: Record<string, string> = { low: "低能量", normal: "普通", high: "高能量" };
@@ -11,8 +9,6 @@ function fmtMin(m: number) { const h = Math.floor(m/60); const r = m%60; return 
 interface WData { dateRange: string; totalTasks: number; totalActions: number; totalXp: number; streak: number; dominantEnergy: string; energyCounts: Record<string,number>; energyPct: Record<string,number>; totalTime: Record<string,number>; trends: Array<{dateKey:string;date:string;xp:number;tasks:number;hasData:boolean}>; hasData: boolean }
 
 interface GrowthPageProps {
-  todayRecords: MinimalRecord[]; deleteRecord: (id: number) => void;
-  todayStats: DayStats; isRunning: (t: string) => boolean; startTimer: (t: string) => void; stopTimer: (t: string) => void;
   dailyStats: Record<string, DayStats>; historyDate: string; setHistoryDate: (d: string) => void; todayStr: string;
   weeklyStats: WData;
 }
@@ -23,8 +19,9 @@ export function GrowthPage(p: GrowthPageProps) {
   return (
     <>
       <header className="header"><h1>成长</h1></header>
-      <ActionRecords records={p.todayRecords} onDelete={p.deleteRecord} />
-      <TimeTracker timeMinutes={p.todayStats.timeMinutes} isRunning={p.isRunning} onStart={p.startTimer} onStop={p.stopTimer} />
+            
+
+
 
       <h2 className="section-title">历史回顾</h2>
       <div className="history-date-picker">

@@ -447,15 +447,14 @@ const doMinimalAction = (action: string) => {
         <TasksPage
           tasks={tasks} input={input} setInput={setInput}
           addTask={addTask} toggleTask={toggleTask} deleteTask={deleteTask}
-          
           doMinimalAction={doMinimalAction}
           dailyTaskRecords={dailyTaskRecords}
+          todayRecords={dailyRecords[todayKey()] ?? []} deleteRecord={deleteRecord}
+          todayStats={todayStats}
+          isRunning={isRunning} startTimer={startTimer} stopTimer={stopTimer}
         />
       ) : activeTab === "growth" ? (
         <GrowthPage
-          todayRecords={todayRecords} deleteRecord={deleteRecord}
-          todayStats={todayStats}
-          isRunning={isRunning} startTimer={startTimer} stopTimer={stopTimer}
           dailyStats={dailyStats}
           historyDate={historyDate} setHistoryDate={setHistoryDate}
           todayStr={todayStr}
