@@ -191,19 +191,25 @@ export async function syncToSupabase(data: AppData): Promise<SyncResult> {
   }
   console.log("[SYNC] Upsert successful for", today, "xp:", data.xp);
 
-  // Sync daily_tasks
+    // Sync daily_tasks
   for (const record of todayTaskCompletions) {
-    const task = data.tasks.find((t) => t.id === record.taskId);
-    const { error: dtError } = await supabase.from("daily_tasks").upsert({
+    const dtPayload = {
+      user_id: DEFAULT_USERNAME,
       task_id: record.taskId,
       date: record.date,
       completed: record.completed,
-      xp: task?.xp ?? 0,
-    }, { onConflict: "task_id,date" });
-    if (dtError) console.error("[SYNC] daily_tasks upsert failed:", dtError);
+    };
+    console.log("[SYNC] daily_tasks payload", dtPayload);
+    const { error: dtError } = await supabase.from("daily_tasks").upsert(dtPayload, {
+      onConflict: "user_id,task_id,date",
+    });
+    if (dtError) {
+      console.error("[SYNC] daily_tasks error:", dtError);
+    } else {
+      console.log("[SYNC] daily_tasks success:", record.taskId, record.completed);
+    }
   }
-
-  // Sync time_records
+// Sync time_records
   if (data.timeRecords.length > 0) {
     const timeRecordsPayload = data.timeRecords.map((r) => ({
       id: r.id,
@@ -216,7 +222,11 @@ export async function syncToSupabase(data: AppData): Promise<SyncResult> {
       timeRecordsPayload,
       { onConflict: "id" }
     );
-    if (trError) console.error("[SYNC] time_records upsert failed:", trError);
+    if (trError) {
+      console.error("[SYNC] time_records upsert error:", trError);
+    } else {
+      console.log("[SYNC] time_records upsert success:", timeRecordsPayload.length, "records");
+    }
   }
 
   return { success: true, timestamp: new Date().toISOString() };
