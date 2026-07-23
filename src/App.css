@@ -1,13 +1,13 @@
-/* ── App Layout ── */
+﻿/* 鈹€鈹€ App Layout 鈹€鈹€ */
 .app {
   width: 100%;
   max-width: 720px;
-  padding: 0 var(--space-lg) 80px;
+  padding: 52px var(--space-lg) 80px;
   position: relative;
   z-index: 1;
 }
 
-/* ── Decorative Background ── */
+/* 鈹€鈹€ Decorative Background 鈹€鈹€ */
 .decorative-bg {
   position: fixed;
   inset: 0;
@@ -20,7 +20,7 @@
   height: 100%;
 }
 
-/* ── Header ── */
+/* 鈹€鈹€ Header 鈹€鈹€ */
 .header {
   text-align: center;
   padding: var(--space-3xl) 0 var(--space-xl);
@@ -38,7 +38,7 @@
   margin-top: var(--space-xs);
 }
 
-/* ── Section Title ── */
+/* 鈹€鈹€ Section Title 鈹€鈹€ */
 .section-title {
   font-family: var(--font-heading);
   font-size: var(--font-size-h2);
@@ -48,7 +48,7 @@
   letter-spacing: 1px;
 }
 
-/* ── Level Hero ── */
+/* 鈹€鈹€ Level Hero 鈹€鈹€ */
 .level-hero {
   position: relative;
   overflow: hidden;
@@ -131,7 +131,7 @@
   color: rgba(255,255,255,0.35);
 }
 
-/* ── Energy Selector ── */
+/* 鈹€鈹€ Energy Selector 鈹€鈹€ */
 .energy-selector {
   display: flex;
   flex-direction: column;
@@ -167,7 +167,7 @@
   letter-spacing: 2px;
 }
 
-/* ── Activity Rings ── */
+/* 鈹€鈹€ Activity Rings 鈹€鈹€ */
 .activity-rings {
   display: flex;
   justify-content: space-around;
@@ -215,7 +215,7 @@
   font-family: var(--font-heading);
 }
 
-/* ── Minimal Actions ── */
+/* 鈹€鈹€ Minimal Actions 鈹€鈹€ */
 .minimal-section {
   padding: var(--space-3xl) 0 var(--space-xl);
   border-top: 1px solid var(--color-divider);
@@ -249,7 +249,7 @@
   transform: scale(0.97);
 }
 
-/* ── Records ── */
+/* 鈹€鈹€ Records 鈹€鈹€ */
 .records-section {
   padding-bottom: var(--space-xl);
 }
@@ -310,7 +310,7 @@
   color: var(--color-error);
 }
 
-/* ── Add Task ── */
+/* 鈹€鈹€ Add Task 鈹€鈹€ */
 .add-task {
   display: flex;
   gap: var(--space-sm);
@@ -356,7 +356,7 @@
   transform: scale(0.97);
 }
 
-/* ── Task List ── */
+/* 鈹€鈹€ Task List 鈹€鈹€ */
 .task-list {
   list-style: none;
   display: flex;
@@ -458,7 +458,7 @@
   color: var(--color-error);
 }
 
-/* ── Time Tracking ── */
+/* 鈹€鈹€ Time Tracking 鈹€鈹€ */
 .time-section {
   padding: var(--space-2xl) 0;
 }
@@ -518,7 +518,7 @@
   background: rgba(204, 90, 74, 0.08);
 }
 
-/* ── History ── */
+/* 鈹€鈹€ History 鈹€鈹€ */
 .history-date-picker {
   text-align: center;
   padding: var(--space-lg) 0;
@@ -631,7 +631,7 @@
   padding: var(--space-5xl) 0;
 }
 
-/* ── Weekly ── */
+/* 鈹€鈹€ Weekly 鈹€鈹€ */
 .weekly-period {
   text-align: center;
   font-family: var(--font-number);
@@ -799,7 +799,7 @@
   padding: var(--space-5xl) 0;
 }
 
-/* ── Bottom Navigation ── */
+/* 鈹€鈹€ Bottom Navigation 鈹€鈹€ */
 .bottom-nav {
   position: fixed;
   bottom: 0;
@@ -846,7 +846,7 @@
   transition: width var(--transition-normal);
 }
 
-/* ── Animations ── */
+/* 鈹€鈹€ Animations 鈹€鈹€ */
 @keyframes heroEntrance {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
@@ -867,7 +867,7 @@
   from { stroke-dashoffset: 226; }
   to { stroke-dashoffset: var(--target-offset); }
 }
-/* ── Profile Page ── */
+/* 鈹€鈹€ Profile Page 鈹€鈹€ */
 .profile-page {
   padding-bottom: 80px;
 }
@@ -1011,7 +1011,7 @@
   font-size: var(--font-size-small);
   color: var(--color-text-tertiary);
 }
-/* ── Home Page ── */
+/* 鈹€鈹€ Home Page 鈹€鈹€ */
 .home-page {
   padding-bottom: 80px;
 }
@@ -1078,7 +1078,7 @@
 }
 
 
-/* ── Energy Status Card ── */
+/* 鈹€鈹€ Energy Status Card 鈹€鈹€ */
 .energy-status-card {
   background: rgba(255,255,255,0.3);
   backdrop-filter: blur(8px);
@@ -1142,7 +1142,7 @@
   color: var(--color-primary);
   font-weight: var(--font-weight-semibold);
 }
-/* ── Home Tasks ── */
+/* 鈹€鈹€ Home Tasks 鈹€鈹€ */
 .home-tasks {
   margin-top: var(--space-2xl);
 }
@@ -1213,7 +1213,7 @@
   background: var(--color-primary);
 }
 
-/* ── Quest Page (RPG Roadmap) ── */
+/* 鈹€鈹€ Quest Page (RPG Roadmap) 鈹€鈹€ */
 .quest-page {
   padding-bottom: 80px;
 }
@@ -1266,7 +1266,7 @@
   transition: width var(--transition-slow);
 }
 
-/* ── Roadmap ── */
+/* 鈹€鈹€ Roadmap 鈹€鈹€ */
 .quest-roadmap {
   position: relative;
   padding: var(--space-lg) 0;
@@ -1303,7 +1303,7 @@
   top: 50%;
 }
 
-/* ── Quest Node ── */
+/* 鈹€鈹€ Quest Node 鈹€鈹€ */
 .quest-node {
   position: relative;
   z-index: 1;
@@ -1455,7 +1455,7 @@
   50% { box-shadow: 0 0 28px var(--color-primary-glow); transform: scale(1.04); }
 }
 
-/* ── Growth Page (RPG Tree + Attributes) ── */
+/* 鈹€鈹€ Growth Page (RPG Tree + Attributes) 鈹€鈹€ */
 .growth-root {
   padding-bottom: 80px;
 }
@@ -1496,7 +1496,7 @@
   color: var(--color-text-tertiary);
 }
 
-/* ── Skill Tree ── */
+/* 鈹€鈹€ Skill Tree 鈹€鈹€ */
 .growth-tree {
   background: rgba(255,255,255,0.25);
   backdrop-filter: blur(8px);
@@ -1595,7 +1595,7 @@
   width: 100%;
 }
 
-/* ── Attributes ── */
+/* 鈹€鈹€ Attributes 鈹€鈹€ */
 .attr-panel {
   background: rgba(255,255,255,0.25);
   backdrop-filter: blur(8px);
@@ -1704,4 +1704,137 @@
   height: 1px;
   background: var(--color-divider);
   margin: var(--space-3xl) 0;
+}
+
+/* Hamburger Menu */
+.hamburger-btn {
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 1100;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 6px;
+  background: rgba(255,255,255,0.35);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.hamburger-btn:hover {
+  background: rgba(255,255,255,0.5);
+}
+.hamburger-line {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--color-text-secondary);
+  border-radius: 2px;
+  transition: all 0.25s ease;
+}
+.hamburger-btn.open .hamburger-line:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.hamburger-btn.open .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+.hamburger-btn.open .hamburger-line:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* overlay */
+.hamburger-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.hamburger-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* drawer */
+.hamburger-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1060;
+  width: 240px;
+  height: 100vh;
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-right: 1px solid rgba(255,255,255,0.3);
+  box-shadow: 4px 0 32px rgba(44,36,22,0.06);
+  transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+.hamburger-drawer.open {
+  transform: translateX(0);
+}
+.hamburger-header {
+  padding: 56px var(--space-xl) var(--space-lg);
+  border-bottom: 1px solid var(--color-divider);
+}
+.hamburger-title {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: 2px;
+}
+.hamburger-list {
+  list-style: none;
+  padding: var(--space-md) 0;
+  display: flex;
+  flex-direction: column;
+}
+.hamburger-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  width: 100%;
+  padding: var(--space-lg) var(--space-xl);
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+.hamburger-item:hover {
+  background: rgba(196,149,106,0.06);
+  color: var(--color-text-primary);
+}
+.hamburger-item.active {
+  background: rgba(196,149,106,0.1);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+.hamburger-item-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.hamburger-item-label {
+  font-family: var(--font-heading);
+  letter-spacing: 1px;
 }

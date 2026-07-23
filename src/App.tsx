@@ -20,6 +20,7 @@ import { GrowthPage } from "./pages/GrowthPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { DecorativeBg } from "./components/DecorativeBg";
 import { BottomNav } from "./components/BottomNav";
+import { HamburgerMenu } from "./components/HamburgerMenu";
 
 // 鈹€鈹€ Constants 鈹€鈹€
 const TASK_XP_MAP: Record<string, number> = {
@@ -98,7 +99,8 @@ function App() {
   const [timeRecords, setTimeRecords] = useState<TimeRecord[]>(() => loadData().timeRecords ?? []);
 
   const [input, setInput] = useState("");
-  const [activeTab, setActiveTab] = useState<"home" | "tasks" | "growth" | "profile">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "tasks" | "growth" | "profile" | "settings">("home");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const now = new Date();
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
@@ -449,6 +451,12 @@ const doMinimalAction = (action: string) => {
   // 鈹€鈹€ Render 鈹€鈹€
   return (
     <><DecorativeBg />
+      <HamburgerMenu
+        isOpen={menuOpen}
+        onToggle={() => setMenuOpen((p) => !p)}
+        activeTab={activeTab}
+        onNavigate={setActiveTab}
+      />
     <div className="app">
       {activeTab === "home" ? (
         <HomePage
@@ -475,13 +483,18 @@ const doMinimalAction = (action: string) => {
           weeklyStats={weeklyStats}
           xp={xp} level={level} streak={streak}
         />
-      ) : (
+      ) : activeTab === "profile" ? (
         <ProfilePage
           level={level} xp={xp} streak={streak}
           dailyStats={dailyStats} weeklyStats={weeklyStats}
         />
-      )}
-      <BottomNav activeTab={activeTab} onChange={setActiveTab} />
+      ) : activeTab === "settings" ? (
+        <div className="settings-page" style={{ padding: "40px 0", textAlign: "center" }}>
+          <div style={{ fontFamily: "var(--font-heading)", fontSize: 24, color: "var(--color-text-primary)", marginBottom: 12 }}>设置</div>
+          <div style={{ fontFamily: "var(--font-number)", fontSize: 15, color: "var(--color-text-tertiary)" }}>设置 - 开发中</div>
+        </div>
+      ) : null}
+      <BottomNav activeTab={activeTab} onChange={(t: any) => setActiveTab(t)} />
     </div>
     </>
   );
