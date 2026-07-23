@@ -932,6 +932,71 @@
   margin-top: var(--space-lg);
 }
 
+
+/* ── Energy Status Card ── */
+.energy-status-card {
+  background: rgba(255,255,255,0.3);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg) var(--space-lg);
+  margin-bottom: var(--space-xl);
+  animation: fadeUp 0.6s ease both;
+}
+.energy-status-title {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-md);
+  letter-spacing: 1px;
+}
+.energy-options-row {
+  display: flex;
+  gap: var(--space-sm);
+}
+.energy-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-md) var(--space-sm);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.energy-option:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: var(--color-primary-light);
+}
+.energy-option.active {
+  background: rgba(196,149,106,0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 12px var(--color-primary-glow);
+}
+.energy-option-icon {
+  font-family: var(--font-number);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  transition: color var(--transition-fast);
+}
+.energy-option.active .energy-option-icon {
+  color: var(--color-primary);
+}
+.energy-option-label {
+  font-size: var(--font-size-small);
+  color: var(--color-text-tertiary);
+  transition: color var(--transition-fast);
+}
+.energy-option.active .energy-option-label {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
 /* ── Home Tasks ── */
 .home-tasks {
   margin-top: var(--space-2xl);

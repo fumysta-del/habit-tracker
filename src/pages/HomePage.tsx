@@ -1,6 +1,8 @@
+import { EnergyStatusCard } from "../components/EnergyStatusCard";
 import type { Task, DayStats, DailyTaskRecord } from "../storage";
 
 interface HomePageProps {
+  energy: string; setEnergy: (e: "low" | "normal" | "high") => void;
   level: number; currentLevelXp: number; progressPercent: number;
   todayStats: DayStats; streak: number; totalTasks: number;
   tasks: Task[]; toggleTask: (id: number) => void;
@@ -25,6 +27,7 @@ export function HomePage(p: HomePageProps) {
     <div className="home-page">
       <header className="home-header">
         <div className="home-date">{fmtDate()}</div>
+      <EnergyStatusCard energy={p.energy} onChange={p.setEnergy} />
         <div className="home-level-area">
           <span className="home-level-label">L E V E L</span>
           <div className="home-level-number">{p.level}</div>
