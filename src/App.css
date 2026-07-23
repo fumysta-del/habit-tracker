@@ -1669,6 +1669,7 @@
     height: 65px;
   }
   .attr-grid {
+    grid-template-columns: repeat(2, 1fr);
     gap: var(--space-sm);
   }
   .attr-card {
