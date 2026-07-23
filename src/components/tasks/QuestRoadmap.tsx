@@ -16,9 +16,6 @@ interface Props {
 export function QuestRoadmap({ tasks, completions, onToggle }: Props) {
   const todayDone = completions.filter((r) => r.completed);
 
-  console.log("[QUEST] task IDs:", tasks.map((t) => ({ id: t.id, text: t.text })));
-  console.log("[QUEST] completed:", todayDone.map((r) => ({ taskId: r.taskId })));
-  console.log("[QUEST] all completions:", completions);
 
   const nodes: QNode[] = tasks.map((t) => {
     const done = todayDone.some((r) => r.taskId === t.id);
@@ -28,7 +25,6 @@ export function QuestRoadmap({ tasks, completions, onToggle }: Props) {
   const firstAvail = nodes.findIndex((n) => n.status === "available");
   if (firstAvail >= 0) nodes[firstAvail].status = "current";
 
-  console.log("[QUEST] nodes:", nodes.map((n) => ({ id: n.id, status: n.status })));
 
   if (nodes.length === 0) return <p className="quest-empty">还没有任务，开始你的冒险吧</p>;
 

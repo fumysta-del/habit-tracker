@@ -361,9 +361,7 @@ function App() {
     const { data, error } = await supabase.from("tasks").insert({ text: input.trim() }).select().single();
     if (error) { console.error("浠诲姟淇濆瓨澶辫触:", error); return; }
     const newTask: Task = { id: data.id, text: data.text, xp: xpVal };
-    console.log("[CREATE TASK]", { id: data.id, text: data.text, xp: xpVal });
     setTasks([...tasks, newTask]);
-    console.log("[TASK LIST]", [...tasks, newTask].map(t => ({ id: t.id, text: t.text })));
     setInput("");
   };
 
@@ -373,7 +371,6 @@ function App() {
     if (!task) return;
   const todayStr = getLocalDateString();
     const record = todayCompletionRecords.find((r) => r.taskId === id);
-    console.log("[TOGGLE] task:", task, "record:", record, "todayCompletionRecords:", todayCompletionRecords);
     if (record?.completed) {
       setXp((p) => Math.max(0, p - task.xp));
       setDailyTaskRecords((prev: Record<string, DailyTaskRecord[]>) => ({
@@ -493,4 +490,3 @@ const doMinimalAction = (action: string) => {
 }
 
 export default App;
-
