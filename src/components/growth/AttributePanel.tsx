@@ -12,7 +12,9 @@ const IMGS: Record<string, string> = {
 
 const card = (imgKey: string, label: string, val: number) => (
   <div key={imgKey} className="attr-card">
-    <img src={IMGS[imgKey]} alt={label} className="attr-badge" />
+    <div className="attr-image-box">
+      <img src={IMGS[imgKey]} alt={label} className="attr-badge" />
+    </div>
     <span className="attr-label">{label}</span>
     <span className="attr-value">{Math.min(val, 100)}</span>
   </div>
