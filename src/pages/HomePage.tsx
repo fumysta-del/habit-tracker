@@ -48,13 +48,13 @@ export function HomePage(p: HomePageProps) {
       </header>
 
       <section className="eval-section">
-        <h3 className="section-title">璁板綍浠婃棩琛屽姩</h3>
+        <h3 className="section-title">记录今日行动</h3>
         <ActionHintMarquee isFocused={evalFocused} hasInput={evalInput.length > 0} />
         <div className="eval-input-row">
           <input
             type="text"
             className="eval-input"
-            placeholder="浠婂ぉ瀹屾垚浜嗕粈涔堬紵"
+            placeholder="今天完成了什么？"
             value={evalInput}
             onChange={(e) => setEvalInput(e.target.value)}
             onFocus={() => setEvalFocused(true)}
@@ -66,7 +66,7 @@ export function HomePage(p: HomePageProps) {
             disabled={!evalInput.trim()}
             onClick={() => { if (evalInput.trim()) { p.onEvaluateAction(evalInput.trim()); setEvalInput(""); } }}
           >
-            琛屽姩璇勪及
+            行动评估
           </button>
         </div>
       </section>
