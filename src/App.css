@@ -1649,6 +1649,43 @@
   color: var(--color-text-primary);
   font-variant-numeric: tabular-nums;
 }
+.attr-label {
+  font-family: var(--font-number);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+.attr-grid {
+  width: 100%;
+  box-sizing: border-box;
+}
+.attr-card {
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+  .attr-badge {
+    width: 65px;
+    height: 65px;
+  }
+  .attr-grid {
+    gap: var(--space-sm);
+  }
+  .attr-card {
+    padding: var(--space-sm) 0;
+    gap: var(--space-xs);
+  }
+  .attr-label {
+    font-size: var(--font-size-small);
+  }
+  .attr-value {
+    font-size: var(--font-size-body);
+  }
+  .attr-panel {
+    overflow: hidden;
+  }
+}
+
 .growth-separator {
   height: 1px;
   background: var(--color-divider);
