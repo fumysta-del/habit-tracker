@@ -21,6 +21,8 @@ import { ProfilePage } from "./pages/ProfilePage";
 import { DecorativeBg } from "./components/DecorativeBg";
 import { BottomNav } from "./components/BottomNav";
 import { HamburgerMenu } from "./components/HamburgerMenu";
+import { evaluateAction, getAttrTotalFromLog, type EvalResult, type EvalLogEntry } from "./utils/actionEvaluator";
+import { ActionEvaluationModal } from "./components/action/ActionEvaluationModal";
 
 // 鈹€鈹€ Constants 鈹€鈹€
 const TASK_XP_MAP: Record<string, number> = {
@@ -30,6 +32,7 @@ const TASK_XP_MAP: Record<string, number> = {
 };
 const CUSTOM_TASK_XP = 10;
 const MINIMAL_ACTION_XP = 3;
+const EVAL_LOG_KEY = "actionEvalLog";
 
 const TIME_CATEGORIES = [
   { type: "游戏", icon: "🎮" },
@@ -97,6 +100,13 @@ function App() {
   const [dailyTaskRecords, setDailyTaskRecords] = useState<Record<string, DailyTaskRecord[]>>(() => loadData().dailyTaskRecords ?? {});
   const [dailyStats, setDailyStats] = useState<Record<string, DayStats>>(() => loadData().history);
   const [timeRecords, setTimeRecords] = useState<TimeRecord[]>(() => loadData().timeRecords ?? []);
+  const [evalLog, setEvalLog] = useState<EvalLogEntry[]>(() => {
+    try {
+      const raw = localStorage.getItem(EVAL_LOG_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch { return []; }
+  });
+  const [pendingEval, setPendingEval] = useState<EvalResult | null>(null);
 
   const [input, setInput] = useState("");
   const [activeTab, setActiveTab] = useState<"home" | "tasks" | "growth" | "profile" | "settings">("home");
@@ -351,6 +361,7 @@ function App() {
   }, [todayStats, cloudReady]);
 
   // 鈹€鈹€ Derived: UI 鈹€鈹€
+  const attrTotals = useMemo(() => getAttrTotalFromLog(evalLog), [evalLog]);
   const level = Math.floor(xp / 100) + 1;
   const currentLevelXp = xp % 100;
   const progressPercent = Math.min(currentLevelXp, 100);
@@ -447,6 +458,26 @@ const doMinimalAction = (action: string) => {
       return prev;
     });
   };
+  // Action Evaluation handlers
+  const handleEvaluateAction = (text: string) => {
+    const result = evaluateAction(text);
+    setPendingEval(result);
+  };
+  const handleClaimReward = () => {
+    const ev = pendingEval;
+    if (!ev) return;
+    setXp((p) => p + ev.totalXP);
+    const entry = { id: Date.now(), action: ev.action, category: ev.category, xp: ev.totalXP, attrBonus: ev.attrBonus, timestamp: new Date().toISOString() };
+    setEvalLog((prev) => { const next = [entry].concat(prev); localStorage.setItem("actionEvalLog", JSON.stringify(next)); return next; });
+    const nowMs = new Date();
+    const key = nowMs.toDateString();
+    setDailyRecords((prev) => {
+      const recs = prev[key] || [];
+      return Object.assign({}, prev, { [key]: recs.concat([{ id: nowMs.getTime(), action: ev.action, timestamp: nowMs.toISOString(), xp: ev.totalXP }]) });
+    });
+    setPendingEval(null);
+  };
+  const handleCloseEval = () => setPendingEval(null);
 
   // 鈹€鈹€ Render 鈹€鈹€
   return (
@@ -458,7 +489,7 @@ const doMinimalAction = (action: string) => {
         onNavigate={setActiveTab}
       />
     <div className="app">
-      {activeTab === "home" ? (
+      {activeTab === "home" ? (<>
         <HomePage
           energy={energy} setEnergy={setEnergy}
                     level={level} currentLevelXp={currentLevelXp} progressPercent={progressPercent}
@@ -468,7 +499,10 @@ const doMinimalAction = (action: string) => {
           doMinimalAction={doMinimalAction} input={input} setInput={setInput} addTask={addTask}
           todayRecords={dailyRecords[todayKey()] ?? []} deleteRecord={deleteRecord}
           isRunning={isRunning} startTimer={startTimer} stopTimer={stopTimer}
+          onEvaluateAction={handleEvaluateAction}
         />
+        {pendingEval && <ActionEvaluationModal result={pendingEval} onClaim={handleClaimReward} onClose={handleCloseEval} />}
+      </>
       ) : activeTab === "tasks" ? (
         <TasksPage
           tasks={tasks}
@@ -487,6 +521,7 @@ const doMinimalAction = (action: string) => {
         <ProfilePage
           level={level} xp={xp} streak={streak}
           dailyStats={dailyStats} weeklyStats={weeklyStats}
+          attrBonuses={attrTotals}
         />
       ) : activeTab === "settings" ? (
         <div className="settings-page" style={{ padding: "40px 0", textAlign: "center" }}>
