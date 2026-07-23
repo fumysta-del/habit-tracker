@@ -18,6 +18,7 @@ export function QuestRoadmap({ tasks, completions, onToggle }: Props) {
 
   console.log("[QUEST] task IDs:", tasks.map((t) => ({ id: t.id, text: t.text })));
   console.log("[QUEST] completed:", todayDone.map((r) => ({ taskId: r.taskId })));
+  console.log("[QUEST] all completions:", completions);
 
   const nodes: QNode[] = tasks.map((t) => {
     const done = todayDone.some((r) => r.taskId === t.id);
