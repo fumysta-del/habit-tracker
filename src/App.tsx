@@ -474,7 +474,10 @@ const doMinimalAction = (action: string) => {
           xp={xp} level={level} streak={streak}
         />
       ) : (
-        <ProfilePage />
+        <ProfilePage
+          level={level} xp={xp} streak={streak}
+          dailyStats={dailyStats} weeklyStats={weeklyStats}
+        />
       )}
       <BottomNav activeTab={activeTab} onChange={setActiveTab} />
     </div>
