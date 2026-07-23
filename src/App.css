@@ -1613,10 +1613,11 @@
   letter-spacing: 1px;
 }
 .attr-badge {
-  width: 84px;
-  height: 84px;
+  width: 96px;
+  height: 96px;
   object-fit: contain;
   flex-shrink: 0;
+  max-width: 100%;
 }
 .attr-grid {
   display: grid;
