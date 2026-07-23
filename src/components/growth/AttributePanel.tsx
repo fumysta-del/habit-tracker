@@ -4,10 +4,10 @@ interface Props {
 }
 
 const IMGS: Record<string, string> = {
-  focus: "/assets/badges/badge-knowledge.png",
-  discipline: "/assets/badges/badge-discipline.png",
-  energy: "/assets/badges/badge-sport.png",
-  creativity: "/assets/badges/badge-creativity.png",
+  focus: "/assets/badges/badge-knowledge.png?v=2",
+  discipline: "/assets/badges/badge-discipline.png?v=2",
+  energy: "/assets/badges/badge-sport.png?v=2",
+  creativity: "/assets/badges/badge-creativity.png?v=2",
 };
 
 const card = (imgKey: string, label: string, val: number) => (
