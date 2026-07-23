@@ -12,12 +12,14 @@ const IMGS: Record<string, string> = {
 
 const bar = (label: string, val: number, color: string, imgKey: string) => (
   <div key={label} className="attr-row">
-    <img src={IMGS[imgKey]} alt={label} className="attr-icon" />
-    <span className="attr-label">{label}</span>
-    <div className="attr-track">
-      <div className="attr-fill" style={{ width: Math.min(val, 100) + "%", background: color }} />
+    <img src={IMGS[imgKey]} alt={label} className="attr-badge" />
+    <div className="attr-info">
+      <span className="attr-label">{label}</span>
+      <div className="attr-track">
+        <div className="attr-fill" style={{ width: Math.min(val, 100) + "%", background: color }} />
+      </div>
+      <span className="attr-value">{Math.min(val, 100)}</span>
     </div>
-    <span className="attr-value">{Math.min(val, 100)}</span>
   </div>
 );
 

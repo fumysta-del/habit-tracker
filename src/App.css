@@ -1612,12 +1612,17 @@
   margin-bottom: var(--space-lg);
   letter-spacing: 1px;
 }
-.attr-icon {
-  width: 28px;
-  height: 28px;
+.attr-badge {
+  width: 72px;
+  height: 72px;
   object-fit: contain;
   flex-shrink: 0;
-  border-radius: 4px;
+}
+.attr-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
 }
 .char-avatar-img {
   width: 100%;
@@ -1628,16 +1633,15 @@
 .attr-row {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-md);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-lg);
 }
 .attr-row:last-child { margin-bottom: 0; }
 .attr-label {
   font-family: var(--font-number);
-  font-size: var(--font-size-caption);
-  color: var(--color-text-secondary);
-  width: 72px;
-  flex-shrink: 0;
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
 }
 .attr-track {
   flex: 1;
@@ -1655,8 +1659,6 @@
   font-family: var(--font-number);
   font-size: var(--font-size-caption);
   color: var(--color-text-primary);
-  width: 24px;
-  text-align: right;
   font-weight: var(--font-weight-semibold);
 }
 .growth-separator {
