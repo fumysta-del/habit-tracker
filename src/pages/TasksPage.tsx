@@ -26,11 +26,11 @@ export function TasksPage(p: TasksPageProps) {
     <div className="quest-page">
       <header className="quest-header">
         <div className="quest-header-top">
-          <span className="quest-badge">TODAY'S QUEST</span>
-          <span className="quest-chapter">Chapter 05</span>
+          <span className="quest-badge">今日任务</span>
+          <span className="quest-chapter">第 05 章</span>
         </div>
         <div className="quest-progress">
-          <span className="quest-progress-text">{completedCount}/{p.tasks.length} Quests Complete</span>
+          <span className="quest-progress-text">{completedCount}/{p.tasks.length} 任务完成</span>
           <div className="quest-progress-bar">
             <div className="quest-progress-fill" style={{ width: pct + "%" }} />
           </div>
@@ -40,13 +40,13 @@ export function TasksPage(p: TasksPageProps) {
       <QuestRoadmap tasks={p.tasks} completions={todayCompletions} onToggle={p.toggleTask} />
 
       <div className="quest-actions-section">
-        <h3 className="quest-section-title">Quick Actions</h3>
+        <h3 className="quest-section-title">快速操作</h3>
         <DailyActions onClick={p.doMinimalAction} />
         <ActionRecords records={p.todayRecords} onDelete={p.deleteRecord} />
       </div>
 
       <div className="quest-add-section">
-        <h3 className="quest-section-title">Create New Quest</h3>
+        <h3 className="quest-section-title">创建新任务</h3>
         <TaskInput value={p.input} onChange={p.setInput} onAdd={p.addTask} />
       </div>
 

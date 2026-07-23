@@ -1,19 +1,19 @@
 export function GrowthTree({ xp }: { xp: number }) {
   const branches = [
-    { id: "knowledge", name: "Knowledge", icon: "📚", unlock: 100, leaves: [
-      { id: "read", name: "Reading", unlock: 200 },
-      { id: "learn", name: "Learning", unlock: 400 },
-      { id: "deepwork", name: "Deep Work", unlock: 700 },
+    { id: "knowledge", name: "知识", icon: "📚", unlock: 100, leaves: [
+      { id: "read", name: "阅读", unlock: 200 },
+      { id: "learn", name: "学习", unlock: 400 },
+      { id: "deepwork", name: "深度工作", unlock: 700 },
     ]},
-    { id: "health", name: "Health", icon: "🏃", unlock: 100, leaves: [
-      { id: "exercise", name: "Exercise", unlock: 200 },
-      { id: "sleep", name: "Sleep", unlock: 400 },
-      { id: "nutrition", name: "Nutrition", unlock: 700 },
+    { id: "health", name: "健康", icon: "🏃", unlock: 100, leaves: [
+      { id: "exercise", name: "运动", unlock: 200 },
+      { id: "sleep", name: "睡眠", unlock: 400 },
+      { id: "nutrition", name: "营养", unlock: 700 },
     ]},
-    { id: "discipline", name: "Discipline", icon: "⚡", unlock: 100, leaves: [
-      { id: "habit", name: "Habit Streak", unlock: 200 },
-      { id: "time", name: "Time Mgmt", unlock: 400 },
-      { id: "consist", name: "Consistency", unlock: 700 },
+    { id: "discipline", name: "自律", icon: "⚡", unlock: 100, leaves: [
+      { id: "habit", name: "习惯坚持", unlock: 200 },
+      { id: "time", name: "时间管理", unlock: 400 },
+      { id: "consist", name: "持续力", unlock: 700 },
     ]},
   ];
 

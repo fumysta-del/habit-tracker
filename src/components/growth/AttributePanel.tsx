@@ -14,11 +14,11 @@ const bar = (label: string, val: number, color: string) => (
 export function AttributePanel(p: Props) {
   return (
     <div className="attr-panel">
-      <h3 className="panel-title">Attributes</h3>
-      {bar("Focus", p.focus, "var(--color-primary)")}
-      {bar("Discipline", p.discipline, "var(--color-accent)")}
-      {bar("Energy", p.energy, "var(--color-energy-normal)")}
-      {bar("Creativity", p.creativity, "var(--color-energy-high)")}
+      <h3 className="panel-title">属性</h3>
+      {bar("专注", p.focus, "var(--color-primary)")}
+      {bar("自律", p.discipline, "var(--color-accent)")}
+      {bar("精力", p.energy, "var(--color-energy-normal)")}
+      {bar("创造力", p.creativity, "var(--color-energy-high)")}
     </div>
   );
 }

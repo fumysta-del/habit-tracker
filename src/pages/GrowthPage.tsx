@@ -26,7 +26,7 @@ export function GrowthPage(p: GrowthPageProps) {
   return (
     <div className="growth-root">
       <header className="growth-header">
-        <span className="growth-badge">CHARACTER GROWTH</span>
+        <span className="growth-badge">角色成长</span>
       </header>
 
       <GrowthStats level={p.level} xp={p.xp} streak={p.streak} completed={todayDone} />
