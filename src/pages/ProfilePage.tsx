@@ -2,6 +2,7 @@ import type { DayStats } from "../storage";
 import { CharacterCard } from "../components/profile/CharacterCard";
 import { SealWall } from "../components/profile/SealWall";
 import { ProfileStats } from "../components/profile/ProfileStats";
+import { AttributePanel } from "../components/growth/AttributePanel";
 
 interface ProfilePageProps {
   level: number; xp: number; streak: number;
@@ -19,6 +20,7 @@ export function ProfilePage(p: ProfilePageProps) {
   const eHigh = w.energyCounts.high ?? 0;
   const eTotal = eLow + eNorm + eHigh;
   const energy = eTotal > 0 ? Math.round((eLow * 30 + eNorm * 60 + eHigh * 90) / eTotal) : 50;
+  const creativity = Math.min(100, Math.round(w.totalActions * 5));
   const discipline = Math.round(Math.min(100, w.totalTasks * 10) * 0.5 + Math.min(100, p.streak * 5) * 0.5);
 
   const seals = [
@@ -36,6 +38,7 @@ export function ProfilePage(p: ProfilePageProps) {
         <span className="profile-badge">角色档案</span>
       </header>
       <CharacterCard level={p.level} xp={p.xp} />
+      <AttributePanel focus={focus} discipline={discipline} energy={energy} creativity={creativity} />
       <SealWall seals={seals} />
       <ProfileStats streak={p.streak} completed={totalCompleted} focus={focus} discipline={discipline} />
     </div>

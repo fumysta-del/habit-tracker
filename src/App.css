@@ -1613,8 +1613,8 @@
   letter-spacing: 1px;
 }
 .attr-badge {
-  width: 80px;
-  height: 80px;
+  width: 84px;
+  height: 84px;
   object-fit: contain;
   flex-shrink: 0;
 }

@@ -1,5 +1,9 @@
 import { EnergyStatusCard } from "../components/EnergyStatusCard";
-import type { Task, DayStats, DailyTaskRecord } from "../storage";
+import { DailyActions } from "../components/DailyActions";
+import { ActionRecords } from "../components/ActionRecords";
+import { TaskInput } from "../components/TaskInput";
+import { TimeTracker } from "../components/TimeTracker";
+import type { Task, DayStats, DailyTaskRecord, MinimalRecord } from "../storage";
 
 interface HomePageProps {
   energy: string; setEnergy: (e: "low" | "normal" | "high") => void;
@@ -7,6 +11,10 @@ interface HomePageProps {
   todayStats: DayStats; streak: number; totalTasks: number;
   tasks: Task[]; toggleTask: (id: number) => void;
   dailyTaskRecords: Record<string, DailyTaskRecord[]>;
+  doMinimalAction: (a: string) => void;
+  input: string; setInput: (v: string) => void; addTask: () => void;
+  todayRecords: MinimalRecord[]; deleteRecord: (id: number) => void;
+  isRunning: (t: string) => boolean; startTimer: (t: string) => void; stopTimer: (t: string) => void;
 }
 
 function fmtDate(): string {
@@ -16,18 +24,11 @@ function fmtDate(): string {
 }
 
 export function HomePage(p: HomePageProps) {
-  const today = new Date();
-  const todayKey = today.getFullYear() + "-" +
-    String(today.getMonth()+1).padStart(2,"0") + "-" +
-    String(today.getDate()).padStart(2,"0");
-  const todayCompletion = p.dailyTaskRecords[todayKey] ?? [];
-  const defaults = ["运动10分钟","学习30分钟","整理桌面"];
-
   return (
     <div className="home-page">
       <header className="home-header">
         <div className="home-date">{fmtDate()}</div>
-      <EnergyStatusCard energy={p.energy} onChange={p.setEnergy} />
+        <EnergyStatusCard energy={p.energy} onChange={p.setEnergy} />
         <div className="home-level-area">
           <span className="home-level-label">L E V E L</span>
           <div className="home-level-number">{p.level}</div>
@@ -41,26 +42,13 @@ export function HomePage(p: HomePageProps) {
         <div className="home-streak">🔥 {p.streak} 天连续</div>
       </header>
 
-      <div className="home-tasks">
-        <h3 className="home-tasks-title">今日行动</h3>
-        {p.tasks.filter((t) => defaults.indexOf(t.text) >= 0).map((task) => {
-          const done = todayCompletion.some((r) => r.taskId === task.id && r.completed);
-          return (
-            <div key={task.id} className={"home-task-card" + (done ? " done" : "")}
-              onClick={() => p.toggleTask(task.id)}>
-              <div className="home-task-info">
-                <span className="home-task-name">{task.text}</span>
-                <span className="home-task-xp">+{task.xp} XP</span>
-              </div>
-              <div className={"home-task-circle" + (done ? " checked" : "")}>
-                {done && <svg width="14" height="14" viewBox="0 0 14 14">
-                  <path d="M3 7L6 10L11 4" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <section className="home-quick">
+        <h3 className="section-title">快速操作</h3>
+        <DailyActions onClick={p.doMinimalAction} />
+        <ActionRecords records={p.todayRecords} onDelete={p.deleteRecord} />
+        <TaskInput value={p.input} onChange={p.setInput} onAdd={p.addTask} />
+        <TimeTracker timeMinutes={p.todayStats.timeMinutes} isRunning={p.isRunning} onStart={p.startTimer} onStop={p.stopTimer} />
+      </section>
     </div>
   );
 }

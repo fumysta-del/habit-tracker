@@ -1,6 +1,5 @@
 import type { DayStats } from "../storage";
 import { GrowthTree } from "../components/growth/GrowthTree";
-import { AttributePanel } from "../components/growth/AttributePanel";
 import { GrowthStats } from "../components/growth/GrowthStats";
 
 const EICON: Record<string, string> = { low: "(( _ _ ))..zzzZZ", normal: "＜コ:彡", high: "^ ^" };
@@ -23,15 +22,6 @@ export function GrowthPage(p: GrowthPageProps) {
   const todayKey = new Date().toDateString();
   const todayDone = p.dailyStats[todayKey]?.completedTasks ?? 0;
 
-  const focus = Math.min(100, Math.round(((w.totalTime["学习"] ?? 0) / 420) * 100));
-  const eLow = w.energyCounts.low ?? 0;
-  const eNorm = w.energyCounts.normal ?? 0;
-  const eHigh = w.energyCounts.high ?? 0;
-  const eTotal = eLow + eNorm + eHigh;
-  const energy = eTotal > 0 ? Math.round((eLow * 30 + eNorm * 60 + eHigh * 90) / eTotal) : 50;
-  const creativity = Math.min(100, Math.round(w.totalActions * 5));
-  const discipline = Math.round(Math.min(100, w.totalTasks * 10) * 0.5 + Math.min(100, p.streak * 5) * 0.5);
-
   return (
     <div className="growth-root">
       <header className="growth-header">
@@ -41,8 +31,6 @@ export function GrowthPage(p: GrowthPageProps) {
       <GrowthStats level={p.level} xp={p.xp} streak={p.streak} completed={todayDone} />
 
       <GrowthTree xp={p.xp}  />
-
-      <AttributePanel focus={focus} discipline={discipline} energy={energy} creativity={creativity} />
 
       <div className="growth-separator" />
 
