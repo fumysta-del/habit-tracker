@@ -2118,3 +2118,110 @@
   from { opacity: 0; transform: translateY(20px) scale(0.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+/* ── Growth Events Tree ── */
+.gtree-section {
+  margin-top: var(--space-3xl);
+  animation: fadeUp 0.6s ease both;
+}
+.gtree-section-title {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-xl);
+  letter-spacing: 1px;
+}
+.gtree-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+.gtree-branch {
+  background: rgba(255,255,255,0.2);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: all var(--transition-normal);
+}
+.gtree-branch-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--color-divider);
+}
+.gtree-branch-icon {
+  font-size: 20px;
+}
+.gtree-branch-label {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: 1px;
+}
+.gtree-branch-count {
+  margin-left: auto;
+  font-family: var(--font-number);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-tertiary);
+  background: rgba(196,149,106,0.08);
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+}
+.gtree-nodes {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+.gtree-node {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  position: relative;
+}
+.gtree-connector {
+  width: 2px;
+  min-height: 100%;
+  background: var(--color-primary-light);
+  flex-shrink: 0;
+  border-radius: 2px;
+  align-self: stretch;
+  margin-left: 6px;
+}
+.gtree-node:last-child .gtree-connector {
+  background: transparent;
+}
+.gtree-node-body {
+  flex: 1;
+  min-width: 0;
+}
+.gtree-node-title {
+  display: block;
+  font-size: var(--font-size-body);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.4;
+}
+.gtree-node-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: 4px;
+}
+.gtree-node-xp {
+  font-family: var(--font-number);
+  font-size: var(--font-size-caption);
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+}
+.gtree-node-attr {
+  font-family: var(--font-number);
+  font-size: var(--font-size-small);
+  color: var(--color-text-tertiary);
+}

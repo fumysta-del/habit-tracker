@@ -311,3 +311,15 @@ export type EvalLogEntry = {
   attrBonus: Record<string, number>;
   timestamp: string;
 };
+
+export const CATEGORY_MAP: Record<string, { label: string; icon: string }> = {
+  knowledge: { label: "知识", icon: "📚" },
+  focus: { label: "专注", icon: "🎯" },
+  discipline: { label: "自律", icon: "🌱" },
+  energy: { label: "运动", icon: "🏋️" },
+  creativity: { label: "创造", icon: "🎨" },
+  money: { label: "财富", icon: "💰" },
+  social: { label: "社交", icon: "🤝" },
+  life: { label: "生活", icon: "🌿" },
+  quest: { label: "任务", icon: "⚔️" },
+};

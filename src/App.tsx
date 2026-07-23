@@ -507,6 +507,7 @@ const doMinimalAction = (action: string) => {
         <TasksPage
           tasks={tasks}
           dailyTaskRecords={dailyTaskRecords}
+          growthEvents={evalLog}
           toggleTask={toggleTask} deleteTask={deleteTask}
         />
       ) : activeTab === "growth" ? (

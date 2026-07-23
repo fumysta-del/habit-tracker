@@ -1,8 +1,10 @@
 import { getLocalDateString } from "../storage";
 import { QuestRoadmap } from "../components/tasks/QuestRoadmap";
+import { type EvalLogEntry } from "../utils/actionEvaluator";
 import type { Task, DailyTaskRecord } from "../storage";
 
 interface TasksPageProps {
+  growthEvents: EvalLogEntry[];
   tasks: Task[];
   dailyTaskRecords: Record<string, DailyTaskRecord[]>;
   toggleTask: (id: number) => void; deleteTask: (id: number) => void;
@@ -28,7 +30,7 @@ export function TasksPage(p: TasksPageProps) {
           </div>
         </div>
       </header>
-      <QuestRoadmap tasks={p.tasks} completions={todayCompletions} onToggle={p.toggleTask} onDelete={p.deleteTask} />
+      <QuestRoadmap tasks={p.tasks} completions={todayCompletions} growthEvents={p.growthEvents} onToggle={p.toggleTask} onDelete={p.deleteTask} />
     </div>
   );
 }
