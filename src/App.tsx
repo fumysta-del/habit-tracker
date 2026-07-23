@@ -449,9 +449,10 @@ const doMinimalAction = (action: string) => {
     <div className="app">
       {activeTab === "home" ? (
         <HomePage
-          energy={energy} setEnergy={setEnergy}
-          level={level} currentLevelXp={currentLevelXp} progressPercent={progressPercent}
+                    level={level} currentLevelXp={currentLevelXp} progressPercent={progressPercent}
           todayStats={todayStats} streak={streak} totalTasks={tasks.length}
+          tasks={tasks} toggleTask={toggleTask}
+          dailyTaskRecords={dailyTaskRecords}
         />
       ) : activeTab === "tasks" ? (
         <TasksPage
