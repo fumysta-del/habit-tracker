@@ -1,4 +1,7 @@
 import type { DayStats } from "../storage";
+import { GrowthTree } from "../components/growth/GrowthTree";
+import { AttributePanel } from "../components/growth/AttributePanel";
+import { GrowthStats } from "../components/growth/GrowthStats";
 
 const EICON: Record<string, string> = { low: "(( _ _ ))..zzzZZ", normal: "＜コ:彡", high: "^ ^" };
 const ELABEL: Record<string, string> = { low: "低能量", normal: "普通", high: "高能量" };
@@ -11,17 +14,33 @@ interface WData { dateRange: string; totalTasks: number; totalActions: number; t
 interface GrowthPageProps {
   dailyStats: Record<string, DayStats>; historyDate: string; setHistoryDate: (d: string) => void; todayStr: string;
   weeklyStats: WData;
+  xp: number; level: number; streak: number;
 }
 
 export function GrowthPage(p: GrowthPageProps) {
-  const hs = p.dailyStats[d2k(p.historyDate)] ?? null;
   const w = p.weeklyStats;
+  const hs = p.dailyStats[d2k(p.historyDate)] ?? null;
+  const todayKey = new Date().toDateString();
+  const todayDone = p.dailyStats[todayKey]?.completedTasks ?? 0;
+
   return (
-    <>
-      <header className="header"><h1>成长</h1></header>
-            
+    <div className="growth-root">
+      <header className="growth-header">
+        <span className="growth-badge">CHARACTER GROWTH</span>
+      </header>
 
+      <GrowthStats level={p.level} xp={p.xp} streak={p.streak} completed={todayDone} />
 
+      <GrowthTree xp={p.xp}  />
+
+      <AttributePanel
+        focus={Math.min(100, Math.round(p.xp / 8))}
+        discipline={Math.min(100, p.streak * 4)}
+        energy={w.hasData ? Math.min(100, Math.round((w.energyCounts.normal ?? 0) / 7 * 100)) : 50}
+        creativity={Math.min(100, w.totalActions * 8)}
+      />
+
+      <div className="growth-separator" />
 
       <h2 className="section-title">历史回顾</h2>
       <div className="history-date-picker">
@@ -44,9 +63,7 @@ export function GrowthPage(p: GrowthPageProps) {
             </div>
           )}
         </section>
-      ) : (
-        <p className="history-empty">该日期暂无数据</p>
-      )}
+      ) : (<p className="history-empty">该日期暂无数据</p>)}
 
       {w.hasData && (
         <>
@@ -72,6 +89,6 @@ export function GrowthPage(p: GrowthPageProps) {
             <div className="weekly-trend-list">{w.trends.map((t) => (<div key={t.dateKey} className={"weekly-trend-item"+(t.hasData?"":" empty")}><span className="weekly-trend-date">{t.date}</span><span className="weekly-trend-xp">+{t.xp}XP</span><span className="weekly-trend-tasks">{t.tasks}个任务</span></div>))}</div></section>
         </>
       )}
-    </>
+    </div>
   );
 }

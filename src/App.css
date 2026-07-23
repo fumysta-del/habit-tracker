@@ -1217,6 +1217,203 @@
   0%, 100% { box-shadow: 0 0 16px var(--color-primary-glow); transform: scale(1); }
   50% { box-shadow: 0 0 28px var(--color-primary-glow); transform: scale(1.04); }
 }
+
+/* ── Growth Page (RPG Tree + Attributes) ── */
+.growth-root {
+  padding-bottom: 80px;
+}
+.growth-header {
+  text-align: center;
+  padding: var(--space-3xl) 0 var(--space-md);
+  animation: fadeUp 0.6s ease both;
+}
+.growth-badge {
+  font-family: var(--font-number);
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  letter-spacing: 4px;
+}
+.growth-stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-xl);
+  padding: var(--space-lg) 0;
+  margin-bottom: var(--space-xl);
+}
+.gs-item {
+  text-align: center;
+}
+.gs-value {
+  display: block;
+  font-family: var(--font-number);
+  font-size: var(--font-size-huge);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  line-height: 1;
+  margin-bottom: var(--space-xs);
+}
+.gs-label {
+  font-family: var(--font-number);
+  font-size: var(--font-size-small);
+  color: var(--color-text-tertiary);
+}
+
+/* ── Skill Tree ── */
+.growth-tree {
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl) var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+.tree-header {
+  text-align: center;
+  margin-bottom: var(--space-2xl);
+}
+.tree-root {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.root-circle {
+  width: 56px;
+  height: 56px;
+  font-size: 28px;
+  background: var(--gradient-gold);
+  box-shadow: 0 0 20px var(--color-primary-glow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #fff;
+}
+.tree-branches {
+  display: flex;
+  gap: var(--space-lg);
+  justify-content: center;
+}
+.tree-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-md);
+  flex: 1;
+  max-width: 120px;
+}
+
+/* Skill Nodes */
+.snode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+  text-align: center;
+}
+.snode-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all var(--transition-normal);
+}
+.snode.unlocked .snode-circle {
+  background: var(--gradient-gold);
+  box-shadow: 0 0 12px var(--color-primary-glow);
+  color: #fff;
+}
+.snode.locked .snode-circle {
+  background: rgba(0,0,0,0.04);
+  border: 2px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+.snode-name {
+  font-size: var(--font-size-small);
+  color: var(--color-text-secondary);
+  line-height: 1.2;
+}
+.snode.unlocked .snode-name {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+.snode.leaf .snode-circle {
+  width: 36px;
+  height: 36px;
+  font-size: 13px;
+}
+
+/* Branch leaves */
+.branch-leaves {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+  width: 100%;
+}
+
+/* ── Attributes ── */
+.attr-panel {
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl) var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+.panel-title {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-lg);
+  letter-spacing: 1px;
+}
+.attr-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+.attr-row:last-child { margin-bottom: 0; }
+.attr-label {
+  font-family: var(--font-number);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-secondary);
+  width: 72px;
+  flex-shrink: 0;
+}
+.attr-track {
+  flex: 1;
+  height: 6px;
+  background: var(--color-divider);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.attr-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-slow);
+}
+.attr-value {
+  font-family: var(--font-number);
+  font-size: var(--font-size-caption);
+  color: var(--color-text-primary);
+  width: 24px;
+  text-align: right;
+  font-weight: var(--font-weight-semibold);
+}
+.growth-separator {
+  height: 1px;
+  background: var(--color-divider);
+  margin: var(--space-3xl) 0;
+}
 /* ── Growth Curve Demo ── */
 .growth-demo {
   width: min(1100px, 85vw);

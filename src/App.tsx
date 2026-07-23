@@ -470,6 +470,7 @@ const doMinimalAction = (action: string) => {
           historyDate={historyDate} setHistoryDate={setHistoryDate}
           todayStr={todayStr}
           weeklyStats={weeklyStats}
+          xp={xp} level={level} streak={streak}
         />
       ) : (
         <ProfilePage />
