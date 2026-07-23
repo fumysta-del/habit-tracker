@@ -1613,23 +1613,23 @@
   letter-spacing: 1px;
 }
 .attr-badge {
-  width: 96px;
-  height: 96px;
+  width: 150px;
+  height: 150px;
   object-fit: contain;
   flex-shrink: 0;
-  max-width: 100%;
 }
 .attr-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-md);
+  gap: var(--space-lg);
 }
 .attr-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-xs);
+  gap: var(--space-md);
   text-align: center;
+  padding: var(--space-lg) var(--space-sm);
 }
 
 
@@ -1644,7 +1644,7 @@
 
 .attr-value {
   font-family: var(--font-number);
-  font-size: var(--font-size-h2);
+  font-size: var(--font-size-h1);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
   font-variant-numeric: tabular-nums;

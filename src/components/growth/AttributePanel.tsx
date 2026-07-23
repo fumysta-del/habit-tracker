@@ -10,9 +10,10 @@ const IMGS: Record<string, string> = {
   creativity: "/assets/badges/badge-creativity.png",
 };
 
-const card = (imgKey: string, val: number) => (
+const card = (imgKey: string, label: string, val: number) => (
   <div key={imgKey} className="attr-card">
-    <img src={IMGS[imgKey]} alt="" className="attr-badge" />
+    <img src={IMGS[imgKey]} alt={label} className="attr-badge" />
+    <span className="attr-label">{label}</span>
     <span className="attr-value">{Math.min(val, 100)}</span>
   </div>
 );
@@ -22,10 +23,10 @@ export function AttributePanel(p: Props) {
     <div className="attr-panel">
       <h3 className="panel-title">属性</h3>
       <div className="attr-grid">
-        {card("focus", p.focus)}
-        {card("discipline", p.discipline)}
-        {card("energy", p.energy)}
-        {card("creativity", p.creativity)}
+        {card("focus", "专注", p.focus)}
+        {card("discipline", "自律", p.discipline)}
+        {card("energy", "精力", p.energy)}
+        {card("creativity", "创造力", p.creativity)}
       </div>
     </div>
   );
