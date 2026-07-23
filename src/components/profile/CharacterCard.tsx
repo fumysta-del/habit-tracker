@@ -1,8 +1,8 @@
-﻿export function CharacterCard({ level, xp }: { level: number; xp: number }) {
+export function CharacterCard({ level, xp }: { level: number; xp: number }) {
   return (
     <div className="char-card">
       <div className="char-avatar">
-        <span className="char-avatar-letter">Y</span>
+        <img src="/assets/badges/avatar.png" alt="Avatar" className="char-avatar-img" />
       </div>
       <div className="char-name">Yishu</div>
       <div className="char-level-row">
