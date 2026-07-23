@@ -124,7 +124,10 @@ function App() {
           console.log("[TASK LOCAL]", tasks);
           const merged = [...tasks];
           for (const ct of cloudTasks) {
-            if (!merged.some((t) => t.text === ct.text)) {
+            const idx = merged.findIndex((t) => t.id === ct.id);
+            if (idx >= 0) {
+              merged[idx] = ct;
+            } else {
               merged.push(ct);
             }
           }
