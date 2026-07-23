@@ -1,9 +1,9 @@
 import { getLocalDateString } from "../storage";
-import { TaskInput } from "../components/TaskInput";
-import { TaskList } from "../components/TaskList";
+import { QuestRoadmap } from "../components/tasks/QuestRoadmap";
 import { DailyActions } from "../components/DailyActions";
 import { ActionRecords } from "../components/ActionRecords";
 import { TimeTracker } from "../components/TimeTracker";
+import { TaskInput } from "../components/TaskInput";
 import type { Task, DailyTaskRecord, MinimalRecord, DayStats } from "../storage";
 
 interface TasksPageProps {
@@ -18,21 +18,41 @@ interface TasksPageProps {
 
 export function TasksPage(p: TasksPageProps) {
   const today = getLocalDateString();
-  const todayTaskRecords = p.dailyTaskRecords[today] ?? [];
-  const tasksWithCompletion = p.tasks.map((t) => ({
-    ...t,
-    completed: todayTaskRecords.some((r) => r.taskId === t.id && r.completed),
-  }));
-  const completedCount = tasksWithCompletion.filter((t) => t.completed).length;
+  const todayCompletions = p.dailyTaskRecords[today] ?? [];
+  const completedCount = todayCompletions.filter((r) => r.completed).length;
+  const pct = p.tasks.length > 0 ? Math.round((completedCount / p.tasks.length) * 100) : 0;
 
   return (
-    <>
-      <header className="header"><h1>今日任务</h1><p className="subtitle">{completedCount}/{p.tasks.length} 已完成</p></header>
-      <DailyActions onClick={p.doMinimalAction} />
-      <ActionRecords records={p.todayRecords} onDelete={p.deleteRecord} />
-      <TaskInput value={p.input} onChange={p.setInput} onAdd={p.addTask} />
-      <TaskList tasks={tasksWithCompletion} onToggle={p.toggleTask} onDelete={p.deleteTask} />
-      <TimeTracker timeMinutes={p.todayStats.timeMinutes} isRunning={p.isRunning} onStart={p.startTimer} onStop={p.stopTimer} />
-    </>
+    <div className="quest-page">
+      <header className="quest-header">
+        <div className="quest-header-top">
+          <span className="quest-badge">TODAY'S QUEST</span>
+          <span className="quest-chapter">Chapter 05</span>
+        </div>
+        <div className="quest-progress">
+          <span className="quest-progress-text">{completedCount}/{p.tasks.length} Quests Complete</span>
+          <div className="quest-progress-bar">
+            <div className="quest-progress-fill" style={{ width: pct + "%" }} />
+          </div>
+        </div>
+      </header>
+
+      <QuestRoadmap tasks={p.tasks} completions={todayCompletions} onToggle={p.toggleTask} />
+
+      <div className="quest-actions-section">
+        <h3 className="quest-section-title">Quick Actions</h3>
+        <DailyActions onClick={p.doMinimalAction} />
+        <ActionRecords records={p.todayRecords} onDelete={p.deleteRecord} />
+      </div>
+
+      <div className="quest-add-section">
+        <h3 className="quest-section-title">Create New Quest</h3>
+        <TaskInput value={p.input} onChange={p.setInput} onAdd={p.addTask} />
+      </div>
+
+      <div className="quest-time-section">
+        <TimeTracker timeMinutes={p.todayStats.timeMinutes} isRunning={p.isRunning} onStart={p.startTimer} onStop={p.stopTimer} />
+      </div>
+    </div>
   );
 }

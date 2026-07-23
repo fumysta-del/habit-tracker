@@ -1,4 +1,3 @@
-import { GrowthCurveDemo } from "../components/GrowthCurveDemo";
 import type { Task, DayStats, DailyTaskRecord } from "../storage";
 
 interface HomePageProps {
@@ -38,8 +37,6 @@ export function HomePage(p: HomePageProps) {
         </div>
         <div className="home-streak">🔥 {p.streak} 天连续</div>
       </header>
-
-      <GrowthCurveDemo />
 
       <div className="home-tasks">
         <h3 className="home-tasks-title">今日行动</h3>
