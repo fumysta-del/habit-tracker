@@ -132,6 +132,15 @@ export function loadData(): AppData {
        }
       if (!data.timeRecords) data.timeRecords = [];
       if (!data.dailyTaskRecords) data.dailyTaskRecords = {};
+      // Dedup: remove duplicate taskId entries per day
+      for (const key of Object.keys(data.dailyTaskRecords)) {
+        const seen = new Set<number>();
+        data.dailyTaskRecords[key] = data.dailyTaskRecords[key].filter((r) => {
+          if (seen.has(r.taskId)) return false;
+          seen.add(r.taskId);
+          return true;
+        });
+      }
       return data;
     }
   } catch { }

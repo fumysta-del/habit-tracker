@@ -134,6 +134,7 @@ function App() {
           console.log("[TASK FINAL]", merged);
           setTasks(merged);
         }
+        let fallbackTaskIds: number[] | null = null;
         if (statsResult.data && statsResult.data.length > 0) {
           const history: Record<string, DayStats> = {};
           let maxCloudXp = 0;
@@ -165,11 +166,7 @@ function App() {
             if (todayRow.time_minutes?.__task_completions) {
               const ids = todayRow.time_minutes.__task_completions;
               if (Array.isArray(ids) && ids.length > 0) {
-                const td = getLocalDateString();
-                setDailyTaskRecords(p => ({
-                  ...p,
-                  [td]: ids.map((taskId) => ({ taskId, date: td, completed: true })),
-                }));
+                fallbackTaskIds = ids;
               }
             }
           }
@@ -190,7 +187,7 @@ function App() {
           console.log("[SYNC] cloud time_records", trResult.data?.length ?? 0, "records");
         } catch (e) { console.error("[SYNC] time_records load failed:", e); }
 
-                // Load daily_tasks for today
+                // Load daily_tasks for today (primary)
         try {
           const td = getLocalDateString();
           const dtResult = await supabase.from("daily_tasks").select("*").eq("date", td);
@@ -202,6 +199,11 @@ function App() {
                 date: r.date,
                 completed: r.completed,
               })),
+            }));
+          } else if (fallbackTaskIds && fallbackTaskIds.length > 0) {
+            setDailyTaskRecords((prev) => ({
+              ...prev,
+              [td]: fallbackTaskIds.map((taskId) => ({ taskId, date: td, completed: true })),
             }));
           }
           console.log("[SYNC] cloud daily_tasks", dtResult.data?.length ?? 0, "records");
@@ -366,28 +368,25 @@ function App() {
   };
 
     const toggleTask = (id: number) => {
-    console.log("[TOGGLE TASK]", { id, tasksTotal: tasks.length, taskIds: tasks.map(t => t.id), completedIds: todayCompletionRecords.filter(r => r.completed).map(r => r.taskId) });
     const task = tasks.find((t) => t.id === id);
     if (!task) return;
-  const todayStr = getLocalDateString();
-    const record = todayCompletionRecords.find((r) => r.taskId === id);
-    if (record?.completed) {
-      setXp((p) => Math.max(0, p - task.xp));
-      setDailyTaskRecords((prev: Record<string, DailyTaskRecord[]>) => ({
-        ...prev, [todayStr]: (prev[todayStr] ?? []).map((r) => r.taskId === id ? { ...r, completed: false } : r),
-      }));
-    } else {
-      setXp((p) => p + task.xp);
-      if (record) {
-        setDailyTaskRecords((prev: Record<string, DailyTaskRecord[]>) => ({
-          ...prev, [todayStr]: (prev[todayStr] ?? []).map((r) => r.taskId === id ? { ...r, completed: true } : r),
-        }));
+    const todayStr = getLocalDateString();
+    setDailyTaskRecords((prev) => {
+      const list = prev[todayStr] ?? [];
+      const idx = list.findIndex((r) => r.taskId === id);
+      if (idx >= 0) {
+        const rec = list[idx];
+        const nextCompleted = !rec.completed;
+        if (nextCompleted) setXp((p) => p + task.xp);
+        else setXp((p) => Math.max(0, p - task.xp));
+        const upd = [...list];
+        upd[idx] = { ...rec, completed: nextCompleted };
+        return { ...prev, [todayStr]: upd };
       } else {
-        setDailyTaskRecords((prev: Record<string, DailyTaskRecord[]>) => ({
-          ...prev, [todayStr]: [...(prev[todayStr] ?? []), { taskId: id, date: todayStr, completed: true }],
-        }));
+        setXp((p) => p + task.xp);
+        return { ...prev, [todayStr]: [...list, { taskId: id, date: todayStr, completed: true }] };
       }
-    }
+    });
   };
   const deleteTask = (id: number) => {
     const task = tasks.find((t) => t.id === id);
