@@ -1354,7 +1354,34 @@
   color: var(--color-text-tertiary);
   opacity: 0.6;
 }
-.quest-node.completed .quest-xp-badge {
+.quest-node.completed .quest-label-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  max-width: 140px;
+}
+.quest-delete {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color var(--transition-fast);
+  flex-shrink: 0;
+  opacity: 0;
+}
+.quest-node:hover .quest-delete {
+  opacity: 1;
+}
+.quest-delete:hover {
+  color: var(--color-error);
+}
+.quest-row.left .quest-label-row {
+  flex-direction: row-reverse;
+}
+.quest-xp-badge {
   opacity: 0.5;
 }
 

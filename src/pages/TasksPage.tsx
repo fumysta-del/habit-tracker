@@ -37,7 +37,7 @@ export function TasksPage(p: TasksPageProps) {
         </div>
       </header>
 
-      <QuestRoadmap tasks={p.tasks} completions={todayCompletions} onToggle={p.toggleTask} />
+      <QuestRoadmap tasks={p.tasks} completions={todayCompletions} onToggle={p.toggleTask} onDelete={p.deleteTask} />
 
       <div className="quest-actions-section">
         <h3 className="quest-section-title">快速操作</h3>
