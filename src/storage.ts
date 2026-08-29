@@ -116,10 +116,17 @@ export function loadData(): AppData {
     if (raw) {
       const data = JSON.parse(raw) as AppData;
       console.log("[LOAD] before merge tasks:", data.tasks);
+      if (!Number.isFinite(data.xp)) {
+        data.xp = Math.max(0, ...Object.values(data.history ?? {}).map((day) => Number.isFinite(day.xpGained) ? day.xpGained : 0));
+      }
       data.level = calculateLevel(data.xp);
       if (!data.tasks) {
           data.tasks = [...DEFAULT_TASKS];
         } else {
+          data.tasks = data.tasks.map((task) => ({
+            ...task,
+            xp: Number.isFinite(task.xp) ? task.xp : DEFAULT_TASKS.find((item) => item.text === task.text)?.xp ?? 10,
+          }));
           for (const dt of DEFAULT_TASKS) {
             if (!data.tasks.some((t) => t.text === dt.text)) {
               const maxId = data.tasks.reduce((m, t) => Math.max(m, t.id), 0);

@@ -75,19 +75,13 @@ function getLast7Days(): string[] {
   return days;
 }
 
-function formatShortDate(dateKey: string): string {
-  const d = new Date(dateKey);
-  if (isNaN(d.getTime())) return dateKey;
-  return `${d.getMonth() + 1}/${d.getDate()}`;
-}
-
-function formatDateRange(days: string[]): string {
-  const fmt = (d: string) => {
-    const date = new Date(d);
-    if (isNaN(date.getTime())) return d;
-    return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, "0")}/${String(date.getDate()).padStart(2, "0")}`;
-  };
-  return `${fmt(days[0])} - ${fmt(days[days.length - 1])}`;
+function mergeDailyTaskRecords(
+  localRecords: DailyTaskRecord[],
+  cloudRecords: DailyTaskRecord[],
+): DailyTaskRecord[] {
+  const merged = new Map(cloudRecords.map((record) => [record.taskId, record]));
+  localRecords.forEach((record) => merged.set(record.taskId, record));
+  return Array.from(merged.values());
 }
 
 // 鈹€鈹€ Component 鈹€鈹€
@@ -204,18 +198,20 @@ function App() {
           const td = getLocalDateString();
           const dtResult = await supabase.from("daily_tasks").select("*").eq("date", td);
           if (dtResult.data && dtResult.data.length > 0) {
+            const cloudRecords = dtResult.data.map((r: any) => ({
+              taskId: r.task_id,
+              date: r.date,
+              completed: r.completed,
+            }));
             setDailyTaskRecords((prev) => ({
               ...prev,
-              [td]: dtResult.data.map((r: any) => ({
-                taskId: r.task_id,
-                date: r.date,
-                completed: r.completed,
-              })),
+              [td]: mergeDailyTaskRecords(prev[td] ?? [], cloudRecords),
             }));
           } else if (fallbackTaskIds && fallbackTaskIds.length > 0) {
+            const fallbackRecords = fallbackTaskIds.map((taskId) => ({ taskId, date: td, completed: true }));
             setDailyTaskRecords((prev) => ({
               ...prev,
-              [td]: fallbackTaskIds.map((taskId) => ({ taskId, date: td, completed: true })),
+              [td]: mergeDailyTaskRecords(prev[td] ?? [], fallbackRecords),
             }));
           }
           console.log("[SYNC] cloud daily_tasks", dtResult.data?.length ?? 0, "records");
@@ -230,25 +226,25 @@ function App() {
         }
       }
     }
-    initFromCloud();initFromCloud();
+    initFromCloud();
     return () => { cancelled = true; };
   }, []);
 
   // 鈹€鈹€ Unified persistence 鈹€鈹€
     useEffect(() => {
-    if (!cloudReady) return;
-    if (!initialSyncDone.current) { initialSyncDone.current = true; }
-    console.log("[SYNC] Syncing - xp:", xp, "tasks:", tasks.length, "records:", Object.keys(dailyRecords).length);
-        const newData = {
+    const newData = {
       username: DEFAULT_USERNAME, level: 0, xp, energy, tasks,
       actions: dailyRecords, history: dailyStats, timeRecords,
       dailyTaskRecords,
        updatedAt: "",
     };
     saveData(newData);
+    if (!cloudReady) return;
+    if (!initialSyncDone.current) { initialSyncDone.current = true; }
+    console.log("[SYNC] Syncing - xp:", xp, "tasks:", tasks.length, "records:", Object.keys(dailyRecords).length);
     syncToSupabase(newData);
   }, [tasks, xp, energy, dailyRecords, dailyStats, timeRecords,
-       cloudReady]);
+       dailyTaskRecords, cloudReady]);
 
   // 鈹€鈹€ Live timer tick 鈹€鈹€
   const [tick, setTick] = useState(0);
@@ -266,7 +262,10 @@ function App() {
   const todayRecords = useMemo(() => dailyRecords[todayKey()] ?? [], [dailyRecords]);
 
   const todayStrISO = getLocalDateString();
-  const todayCompletionRecords = dailyTaskRecords[todayStrISO] ?? [];
+  const todayCompletionRecords = useMemo(
+    () => dailyTaskRecords[todayStrISO] ?? [],
+    [dailyTaskRecords, todayStrISO],
+  );
 
   const todayTimeRecords = useMemo(
     () => timeRecords.filter((r) => {
@@ -312,7 +311,7 @@ function App() {
       energy,
       timeMinutes: minutes,
     };
-  }, [tasks, todayRecords, energy, todayTimeRecords, tick]);
+  }, [tasks, todayRecords, todayCompletionRecords, energy, todayTimeRecords, tick]);
 
   const streak = useMemo(() => calculateStreak(dailyStats), [dailyStats]);
 
@@ -323,18 +322,8 @@ function App() {
     const hasData = entries.some((e) => e.stat !== null);
     const totalTasks = entries.reduce((s, e) => s + (e.stat?.completedTasks ?? 0), 0);
     const totalActions = entries.reduce((s, e) => s + (e.stat?.minimalActionCount ?? 0), 0);
-    const totalXp = entries.reduce((s, e) => s + (e.stat?.xpGained ?? 0), 0);
     const eCounts = { low: 0, normal: 0, high: 0 };
     entries.forEach((e) => { if (e.stat?.energy) eCounts[e.stat.energy]++; });
-    let dominant = "normal" as "low" | "normal" | "high";
-    let maxC = 0;
-    for (const [k, c] of Object.entries(eCounts)) { if (c > maxC) { maxC = c; dominant = k as "low" | "normal" | "high"; } }
-    const totalPts = Object.values(eCounts).reduce((a, b) => a + b, 0) || 1;
-    const energyPct = {
-      low: Math.round((eCounts.low / totalPts) * 100),
-      normal: Math.round((eCounts.normal / totalPts) * 100),
-      high: Math.round((eCounts.high / totalPts) * 100),
-    };
     const totalTime: Record<string, number> = {};
     for (const cat of TIME_CATEGORIES) totalTime[cat.type] = 0;
     entries.forEach((e) => {
@@ -342,23 +331,14 @@ function App() {
         for (const cat of TIME_CATEGORIES) { totalTime[cat.type] += e.stat.timeMinutes[cat.type] ?? 0; }
       }
     });
-    const trends = entries.map((e) => ({
-      dateKey: e.key, date: formatShortDate(e.key),
-      xp: e.stat?.xpGained ?? 0, tasks: e.stat?.completedTasks ?? 0, hasData: e.stat !== null,
-    }));
-    return {
-      dateRange: formatDateRange(last7), totalTasks, totalActions, totalXp,
-      streak: calculateStreak(dailyStats), dominantEnergy: dominant,
-      energyCounts: eCounts, energyPct, totalTime, trends, hasData,
-    };
+    return { totalTasks, totalActions, energyCounts: eCounts, totalTime, hasData };
   }, [dailyStats]);
 
   // 鈹€鈹€ Daily stats snapshot 鈹€鈹€
   useEffect(() => {
-    if (!cloudReady) return;
     const key = todayKey();
     setDailyStats((prev) => ({ ...prev, [key]: todayStats }));
-  }, [todayStats, cloudReady]);
+  }, [todayStats]);
 
   // 鈹€鈹€ Derived: UI 鈹€鈹€
   const attrTotals = useMemo(() => getAttrTotalFromLog(evalLog), [evalLog]);
@@ -384,22 +364,21 @@ function App() {
     const task = tasks.find((t) => t.id === id);
     if (!task) return;
     const todayStr = getLocalDateString();
+    const currentRecord = todayCompletionRecords.find((record) => record.taskId === id);
+    const nextCompleted = currentRecord ? !currentRecord.completed : true;
     setDailyTaskRecords((prev) => {
       const list = prev[todayStr] ?? [];
       const idx = list.findIndex((r) => r.taskId === id);
       if (idx >= 0) {
         const rec = list[idx];
-        const nextCompleted = !rec.completed;
-        if (nextCompleted) setXp((p) => p + task.xp);
-        else setXp((p) => Math.max(0, p - task.xp));
         const upd = [...list];
         upd[idx] = { ...rec, completed: nextCompleted };
         return { ...prev, [todayStr]: upd };
       } else {
-        setXp((p) => p + task.xp);
         return { ...prev, [todayStr]: [...list, { taskId: id, date: todayStr, completed: true }] };
       }
     });
+    setXp((prev) => nextCompleted ? prev + task.xp : Math.max(0, prev - task.xp));
   };
   const deleteTask = (id: number) => {
     const task = tasks.find((t) => t.id === id);
@@ -513,9 +492,9 @@ const doMinimalAction = (action: string) => {
       ) : activeTab === "growth" ? (
         <GrowthPage
           dailyStats={dailyStats}
+          tasks={tasks} dailyTaskRecords={dailyTaskRecords} dailyRecords={dailyRecords}
           historyDate={historyDate} setHistoryDate={setHistoryDate}
           todayStr={todayStr}
-          weeklyStats={weeklyStats}
           xp={xp} level={level} streak={streak}
         />
       ) : activeTab === "profile" ? (

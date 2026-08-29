@@ -1,26 +1,44 @@
-import type { DayStats } from "../storage";
-import { GrowthTree } from "../components/growth/GrowthTree";
+import type { DailyTaskRecord, DayStats, MinimalRecord, Task } from "../storage";
 import { GrowthStats } from "../components/growth/GrowthStats";
+import { WeeklyGrowth } from "../components/growth/WeeklyGrowth";
 
 const EICON: Record<string, string> = { low: "(( _ _ ))..zzzZZ", normal: "＜コ:彡", high: "^ ^" };
 const ELABEL: Record<string, string> = { low: "低能量", normal: "普通", high: "高能量" };
 const TCATS = [{ t: "游戏", i: "🎮" }, { t: "学习", i: "📚" }, { t: "运动", i: "🏃" }, { t: "休息", i: "🛌" }];
 function d2k(i: string) { const [y,m,d] = i.split("-").map(Number); return new Date(y,m-1,d).toDateString(); }
-function fmtMin(m: number) { const h = Math.floor(m/60); const r = m%60; return h > 0 ? h+"小时"+r+"分钟" : r+"分钟"; }
-
-interface WData { dateRange: string; totalTasks: number; totalActions: number; totalXp: number; streak: number; dominantEnergy: string; energyCounts: Record<string,number>; energyPct: Record<string,number>; totalTime: Record<string,number>; trends: Array<{dateKey:string;date:string;xp:number;tasks:number;hasData:boolean}>; hasData: boolean }
+function formatHistoryDate(input: string) {
+  const [year, month, day] = input.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  if (Number.isNaN(date.getTime())) return input;
+  return date.toLocaleDateString("zh-CN", { month: "long", day: "numeric", weekday: "short" });
+}
 
 interface GrowthPageProps {
   dailyStats: Record<string, DayStats>; historyDate: string; setHistoryDate: (d: string) => void; todayStr: string;
-  weeklyStats: WData;
+  tasks: Task[]; dailyTaskRecords: Record<string, DailyTaskRecord[]>; dailyRecords: Record<string, MinimalRecord[]>;
   xp: number; level: number; streak: number;
 }
 
 export function GrowthPage(p: GrowthPageProps) {
-  const w = p.weeklyStats;
-  const hs = p.dailyStats[d2k(p.historyDate)] ?? null;
+  const historyKey = d2k(p.historyDate);
+  const hs = p.dailyStats[historyKey] ?? null;
   const todayKey = new Date().toDateString();
   const todayDone = p.dailyStats[todayKey]?.completedTasks ?? 0;
+  const completedTaskRecords = (p.dailyTaskRecords[p.historyDate] ?? []).filter((record) => record.completed);
+  const selectedActions = p.dailyRecords[historyKey] ?? [];
+  const completedTasks = completedTaskRecords
+    .map((record) => p.tasks.find((task) => task.id === record.taskId))
+    .filter((task): task is Task => Boolean(task));
+  const hasDetails = completedTasks.length > 0 || selectedActions.length > 0;
+  const hasHistory = Boolean(hs) || completedTaskRecords.length > 0 || selectedActions.length > 0;
+  const hasCompleteTaskDetails = completedTasks.length === completedTaskRecords.length
+    && completedTaskRecords.length === (hs?.completedTasks ?? completedTaskRecords.length);
+  const hasCompleteActionDetails = selectedActions.length === (hs?.minimalActionCount ?? selectedActions.length);
+  const canCalculateDayXp = hasDetails && hasCompleteTaskDetails && hasCompleteActionDetails;
+  const exactDayXp = completedTasks.reduce((sum, task) => sum + task.xp, 0)
+    + selectedActions.reduce((sum, record) => sum + record.xp, 0);
+  const displayedTaskCount = hs?.completedTasks ?? completedTaskRecords.length;
+  const displayedActionCount = hs?.minimalActionCount ?? selectedActions.length;
 
   return (
     <div className="growth-root">
@@ -28,25 +46,39 @@ export function GrowthPage(p: GrowthPageProps) {
         <span className="growth-badge">角色成长</span>
       </header>
 
+      <div className="growth-rank" aria-label={`当前等级 ${p.level}，总经验 ${p.xp} XP`}>
+        <span className="growth-rank-level">Lv. {p.level}</span>
+        <span className="growth-rank-xp">{p.xp} XP</span>
+      </div>
+
       <GrowthStats level={p.level} xp={p.xp} streak={p.streak} completed={todayDone} />
 
-      <GrowthTree xp={p.xp}  />
-
-      <div className="growth-separator" />
+      <WeeklyGrowth dailyStats={p.dailyStats} selectedDate={p.historyDate} onSelectDate={p.setHistoryDate} />
 
       <h2 className="section-title">历史回顾</h2>
       <div className="history-date-picker">
         <input type="date" value={p.historyDate} onChange={(e) => p.setHistoryDate(e.target.value)} max={p.todayStr} />
       </div>
-      {hs ? (
+      {hasHistory ? (
         <section className="history-card">
-          <div className="history-energy"><span className="history-energy-icon">{EICON[hs.energy]}</span><span className="history-energy-label">{ELABEL[hs.energy]}</span></div>
-          <div className="history-stats-grid">
-            <div className="history-stat"><span className="history-stat-value">{hs.completedTasks}</span><span className="history-stat-label">完成任务</span></div>
-            <div className="history-stat"><span className="history-stat-value">{hs.minimalActionCount}</span><span className="history-stat-label">最小行动</span></div>
-            <div className="history-stat"><span className="history-stat-value">+{hs.xpGained}</span><span className="history-stat-label">获得 XP</span></div>
+          <div className="history-card-date">{formatHistoryDate(p.historyDate)}</div>
+          {hs && <div className="history-energy"><span className="history-energy-icon">{EICON[hs.energy]}</span><span className="history-energy-label">{ELABEL[hs.energy]}</span></div>}
+          {hasDetails && (
+            <div className="history-record-list">
+              {completedTasks.map((task) => (
+                <div key={`task-${task.id}`} className="history-record-item"><span className="history-record-check">✓</span><span>{task.text}</span></div>
+              ))}
+              {selectedActions.map((record) => (
+                <div key={`action-${record.id}`} className="history-record-item"><span className="history-record-check">✓</span><span>{record.action}</span></div>
+              ))}
+            </div>
+          )}
+          <div className={`history-stats-grid${canCalculateDayXp ? "" : " two"}`}>
+            <div className="history-stat"><span className="history-stat-value">{displayedTaskCount}</span><span className="history-stat-label">完成任务</span></div>
+            <div className="history-stat"><span className="history-stat-value">{displayedActionCount}</span><span className="history-stat-label">完成行动</span></div>
+            {canCalculateDayXp && <div className="history-stat"><span className="history-stat-value">+{exactDayXp}</span><span className="history-stat-label">获得 XP</span></div>}
           </div>
-          {hs.timeMinutes && (
+          {hs?.timeMinutes && (
             <div className="history-time-dist">
               <div className="history-time-title">时间分配</div>
               <div className="history-time-grid">{TCATS.map((c) => (
@@ -55,32 +87,7 @@ export function GrowthPage(p: GrowthPageProps) {
             </div>
           )}
         </section>
-      ) : (<p className="history-empty">该日期暂无数据</p>)}
-
-      {w.hasData && (
-        <>
-          <h2 className="section-title">周报</h2>
-          <section className="weekly-period">{w.dateRange}</section>
-          <section className="weekly-card"><h2 className="weekly-card-title">本周概览</h2>
-            <div className="weekly-grid">
-              <div className="weekly-stat"><span className="weekly-stat-value">{w.totalTasks}</span><span className="weekly-stat-label">完成任务</span></div>
-              <div className="weekly-stat"><span className="weekly-stat-value">{w.totalActions}</span><span className="weekly-stat-label">最小行动</span></div>
-              <div className="weekly-stat"><span className="weekly-stat-value">+{w.totalXp}</span><span className="weekly-stat-label">获得 XP</span></div>
-              <div className="weekly-stat"><span className="weekly-stat-value">{w.streak} 天</span><span className="weekly-stat-label">连续行动</span></div>
-            </div></section>
-          <section className="weekly-card"><h2 className="weekly-card-title">状态分析</h2>
-            <div className="weekly-energy-row"><span className="weekly-energy-icon">{EICON[w.dominantEnergy]}</span><span>本周平均：{ELABEL[w.dominantEnergy]}</span></div>
-            <div className="weekly-energy-bars">{["low","normal","high"].map((k) => (<div key={k} className="weekly-energy-bar-row">
-              <span className="weekly-energy-bar-label">{ELABEL[k]}</span>
-              <div className="weekly-energy-bar-track"><div className={"weekly-energy-bar-fill "+k} style={{width:w.energyPct[k]+"%"}} /></div>
-              <span className="weekly-energy-bar-num">{w.energyCounts[k]}天</span>
-            </div>))}</div></section>
-          <section className="weekly-card"><h2 className="weekly-card-title">时间分配</h2>
-            <div className="weekly-time-list">{TCATS.map((c) => (<div key={c.t} className="weekly-time-item"><span className="weekly-time-cat">{c.i} {c.t}</span><span className="weekly-time-value">{fmtMin(w.totalTime[c.t] ?? 0)}</span></div>))}</div></section>
-          <section className="weekly-card"><h2 className="weekly-card-title">每日趋势</h2>
-            <div className="weekly-trend-list">{w.trends.map((t) => (<div key={t.dateKey} className={"weekly-trend-item"+(t.hasData?"":" empty")}><span className="weekly-trend-date">{t.date}</span><span className="weekly-trend-xp">+{t.xp}XP</span><span className="weekly-trend-tasks">{t.tasks}个任务</span></div>))}</div></section>
-        </>
-      )}
+      ) : (<p className="history-empty">这一天还没有成长记录</p>)}
     </div>
   );
 }
