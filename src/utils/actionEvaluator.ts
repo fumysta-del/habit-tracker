@@ -120,25 +120,12 @@ function getRating(baseXP: number, mult: number): { stars: number; label: string
 }
 
 function extractDuration(text: string): number {
-  const patterns = [
-    /(\d+)\s*小[时時]/,
-    /(\d+)\s*分钟/,
-    /(\d+)\s*分/,
-    /(\d+)\s*[hH]/,
-    /(\d+)\s*[mM]/,
-  ];
-  for (const p of patterns) {
-    const m = text.match(p);
-    if (m) {
-      const val = parseInt(m[1], 10);
-      const ps = p.toString();
-      if (ps.includes("小") || ps.includes("时") || ps.includes("時") || ps.includes("h")) {
-        return val * 60;
-      }
-      return val;
-    }
-  }
-  return 0;
+  const hourMatch = text.match(/(-?\d+(?:\.\d+)?)\s*(?:小[时時]|[hH])/);
+  const minuteMatch = text.match(/(-?\d+(?:\.\d+)?)\s*(?:分钟|分|[mM])/);
+  const hours = hourMatch ? Number.parseFloat(hourMatch[1]) : 0;
+  const minutes = minuteMatch ? Number.parseFloat(minuteMatch[1]) : 0;
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes) || hours < 0 || minutes < 0) return 0;
+  return Math.round(hours * 60 + minutes);
 }
 
 function extractPages(text: string): number {
