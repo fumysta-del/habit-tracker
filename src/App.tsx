@@ -84,6 +84,19 @@ function mergeDailyTaskRecords(
   return Array.from(merged.values());
 }
 
+function getUniqueActionXp(actions: unknown): number {
+  if (!Array.isArray(actions)) return 0;
+  const seen = new Set<number>();
+  return actions.reduce<number>((total, action: unknown) => {
+    const record = action as { id?: unknown; xp?: unknown };
+    const id = Number(record?.id);
+    const actionXp = Number(record?.xp);
+    if (!Number.isFinite(id) || seen.has(id) || !Number.isFinite(actionXp) || actionXp < 0) return total;
+    seen.add(id);
+    return total + actionXp;
+  }, 0);
+}
+
 // 鈹€鈹€ Component 鈹€鈹€
 function App() {
   // 鈹€鈹€ State 鈹€鈹€
@@ -144,9 +157,16 @@ function App() {
         if (statsResult.data && statsResult.data.length > 0) {
           const history: Record<string, DayStats> = {};
           let maxCloudXp = 0;
-          for (const item of statsResult.data) {
+          let previousCloudXp: number | null = null;
+          const orderedStats = [...statsResult.data].sort((a: any, b: any) => String(a.date).localeCompare(String(b.date)));
+          for (const item of orderedStats) {
             const key = new Date(item.date).toDateString();
-            const itemXp = item.xp ?? 0;
+            const storedXp: number = Number.isFinite(item.xp) ? Number(item.xp) : 0;
+            const actionXp = getUniqueActionXp(item.time_minutes?.__actions);
+            const itemXp: number = previousCloudXp !== null && storedXp <= previousCloudXp && actionXp > 0
+              ? previousCloudXp + actionXp
+              : storedXp;
+            previousCloudXp = itemXp;
             if (itemXp > maxCloudXp) maxCloudXp = itemXp;
             history[key] = {
               completedTasks: item.completed_tasks ?? 0,

@@ -1,10 +1,11 @@
-import type { Task, DailyTaskRecord } from "../../storage";
+import { getLocalDateString, type Task, type DailyTaskRecord } from "../../storage";
 import { type EvalLogEntry, CATEGORY_MAP } from "../../utils/actionEvaluator";
 
 interface Props {
   tasks: Task[];
   completions: DailyTaskRecord[];
   growthEvents: EvalLogEntry[];
+  selectedDate?: string;
   onToggle: (id: number) => void;
   onDelete: (id: number) => void;
 }
@@ -14,15 +15,22 @@ const ATTR_NAMES: Record<string, string> = {
   energy: "精力", creativity: "创造力", social: "社交", money: "财富",
 };
 
-export function QuestRoadmap({ tasks, completions, growthEvents, onToggle, onDelete }: Props) {
+export function QuestRoadmap({ tasks, completions, growthEvents, selectedDate, onToggle, onDelete }: Props) {
   // Task nodes
   const doneIds = new Set(completions.filter((r) => r.completed).map((r) => r.taskId));
   const nodes = tasks.map((t) => ({ id: t.id, title: t.text, xp: t.xp, done: doneIds.has(t.id) }));
   const firstAvail = nodes.findIndex((n) => !n.done);
 
   // Growth events tree
+  const targetDate = selectedDate ?? getLocalDateString();
+  const currentDateRecords = growthEvents.filter((event) => {
+    const date = new Date(event.timestamp);
+    if (!Number.isFinite(date.getTime())) return false;
+    const eventDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    return eventDate === targetDate;
+  });
   const grouped: Record<string, EvalLogEntry[]> = {};
-  for (const ev of growthEvents) {
+  for (const ev of currentDateRecords) {
     const cat = ev.category || "life";
     if (!grouped[cat]) grouped[cat] = [];
     grouped[cat].push(ev);
@@ -35,7 +43,7 @@ export function QuestRoadmap({ tasks, completions, growthEvents, onToggle, onDel
     const bT = grouped[b][0]?.timestamp || "";
     return bT.localeCompare(aT);
   });
-  const hasGrowth = growthEvents.length > 0;
+  const hasGrowth = currentDateRecords.length > 0;
 
   if (nodes.length === 0 && !hasGrowth) {
     return <p className="quest-empty">还没有任务，开始你的冒险吧</p>;
