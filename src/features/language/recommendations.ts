@@ -150,13 +150,146 @@ function isExcluded(
   );
 }
 
-async function fetchPool(
+function normalizedEvidence(item: SupabaseListeningRow) {
+  return [
+    item.title,
+    item.description ?? '',
+    item.reason ?? '',
+    item.creator,
+  ]
+    .join(' ')
+    .toLowerCase();
+}
+
+function hasAny(text: string, patterns: RegExp[]) {
+  return patterns.some(pattern => pattern.test(text));
+}
+
+function matchesLanguageEvidence(
+  item: SupabaseListeningRow,
   language: Exclude<Language, 'both'>,
-  duration: Duration,
+) {
+  const text = normalizedEvidence(item);
+
+  if (language === 'cantonese') {
+    const strong = [
+      /全程粤语/i,
+      /全粤语/i,
+      /粤语(访谈|采访|对谈|聊天|播客|vlog|日常|分享|讲解|纪录|节目)/i,
+      /(广东话|广州话).*(访谈|采访|对谈|聊天|播客|vlog|日常|分享|节目)?/i,
+      /cantonese/i,
+    ];
+
+    const bad = [
+      /粤语字幕/i,
+      /中文字幕.*粤语/i,
+      /粤语配音/i,
+      /ai.?配音/i,
+      /ai.?粤语/i,
+      /tts/i,
+      /语音克隆/i,
+      /粤语教学/i,
+      /学粤语/i,
+      /粤语教程/i,
+    ];
+
+    return hasAny(text, strong) && !hasAny(text, bad);
+  }
+
+  const strong = [
+    /全程英文/i,
+    /全英文/i,
+    /english\s+(vlog|podcast|interview|conversation|chat|talk|speaking)/i,
+    /(podcast|interview|conversation|chat|talk)\s+in\s+english/i,
+    /speaking\s+english/i,
+    /in\s+english/i,
+    /英文(访谈|采访|对谈|播客|vlog)/i,
+    /英语(访谈|采访|对谈|播客|vlog)/i,
+  ];
+
+  const bad = [
+    /英文字幕/i,
+    /英语字幕/i,
+    /中英字幕/i,
+    /双语字幕/i,
+    /英语教学/i,
+    /英文教学/i,
+    /学英语/i,
+    /英语教程/i,
+  ];
+
+  return hasAny(text, strong) && !hasAny(text, bad);
+}
+
+function matchesTopicEvidence(item: SupabaseListeningRow, topic: Topic) {
+  const text = normalizedEvidence(item);
+
+  const rules: Record<Topic, RegExp[]> = {
+    daily: [
+      /vlog/i, /日常/i, /一天/i, /生活/i, /routine/i, /day in my life/i,
+    ],
+    study: [
+      /校园/i, /大学/i, /学生/i, /学习/i, /留学/i, /课堂/i, /study/i, /school/i, /college/i, /university/i,
+    ],
+    conversation: [
+      /访谈/i, /采访/i, /对谈/i, /聊天/i, /播客/i, /podcast/i, /interview/i, /conversation/i, /chat/i, /talk show/i,
+    ],
+    food_travel: [
+      /美食/i, /吃/i, /餐厅/i, /探店/i, /旅行/i, /旅游/i, /trip/i, /travel/i, /food/i, /restaurant/i,
+    ],
+    entertainment: [
+      /电影/i, /电视剧/i, /综艺/i, /影视/i, /音乐/i, /明星/i, /娱乐/i, /movie/i, /film/i, /music/i,
+    ],
+    culture_society: [
+      /文化/i, /社会/i, /城市/i, /历史/i, /民俗/i, /公共/i, /culture/i, /society/i, /history/i,
+    ],
+    tech_media: [
+      /科技/i, /人工智能/i, /\bai\b/i, /互联网/i, /媒体/i, /新闻/i, /传播/i, /technology/i, /tech/i, /media/i,
+    ],
+    personal: [
+      /经历/i, /成长/i, /故事/i, /人生/i, /经验/i, /我的/i, /experience/i, /story/i, /journey/i,
+    ],
+  };
+
+  if (!hasAny(text, rules[topic])) return false;
+
+  // “聊天访谈”专门拦截人物故事、故事讲述、剧情/解说等伪访谈。
+  if (topic === 'conversation') {
+    const obviousNonConversation = [
+      /人物故事/i,
+      /明星故事/i,
+      /故事会/i,
+      /故事解说/i,
+      /剧情解说/i,
+      /电影解说/i,
+      /纪录片解说/i,
+      /盘点/i,
+      /混剪/i,
+    ];
+    if (hasAny(text, obviousNonConversation)) return false;
+  }
+
+  return true;
+}
+
+function passesStrictMetadataGuard(
+  item: SupabaseListeningRow,
+  language: Exclude<Language, 'both'>,
   topic: Topic,
 ) {
+  return (
+    matchesLanguageEvidence(item, language) &&
+    matchesTopicEvidence(item, topic)
+  );
+}
+
+async function fetchPool(
+  language: Exclude<Language, 'both'>,
+  topic: Topic,
+  minDuration?: number,
+  maxDuration?: number,
+) {
   const { url, anonKey } = getSupabaseConfig();
-  const [min, max] = durationRanges[duration];
 
   const params = new URLSearchParams();
   params.set(
@@ -165,10 +298,13 @@ async function fetchPool(
   );
   params.set('language', `eq.${language}`);
   params.set('topic', `eq.${topic}`);
-  params.set('duration', `gte.${min}`);
 
-  if (Number.isFinite(max)) {
-    params.append('duration', `lte.${max}`);
+  if (typeof minDuration === 'number') {
+    params.set('duration', `gte.${minDuration}`);
+  }
+
+  if (typeof maxDuration === 'number' && Number.isFinite(maxDuration)) {
+    params.append('duration', `lte.${maxDuration}`);
   }
 
   params.set('is_active', 'eq.true');
@@ -199,6 +335,8 @@ async function fetchPool(
 
 function rankPool(
   rows: SupabaseListeningRow[],
+  language: Exclude<Language, 'both'>,
+  topic: Topic,
   duration: Duration,
   history: readonly LanguageLearningRecord[],
   excludedIds: readonly string[],
@@ -209,6 +347,7 @@ function rankPool(
 
   return rows
     .filter(item => !isExcluded(item, excluded))
+    .filter(item => passesStrictMetadataGuard(item, language, topic))
     .sort((a, b) => {
       const durationDelta =
         Math.abs(a.duration - target) - Math.abs(b.duration - target);
@@ -262,14 +401,49 @@ export async function getLanguageRecommendations({
   return Promise.all(
     wantedLanguages(language).map(async currentLanguage => {
       try {
-        const rows = await fetchPool(currentLanguage, duration, topic);
-        const items = rankPool(
-          rows,
+        const [strictMin, strictMax] = durationRanges[duration];
+
+        // 第一层：严格匹配语言 + 主题 + 时长。
+        const strictRows = await fetchPool(
+          currentLanguage,
+          topic,
+          strictMin,
+          Number.isFinite(strictMax) ? strictMax : undefined,
+        );
+
+        let items = rankPool(
+          strictRows,
+          currentLanguage,
+          topic,
           duration,
           history,
           excludedIds,
           safeCount,
         );
+
+        let relaxedDuration = false;
+
+        // 第二层：如果严格时长完全没有结果，只放宽时长，绝不放宽主题。
+        // 这样“科技媒体”不会再混进 vlog/生活日常。
+        if (items.length === 0) {
+          const broaderRows = await fetchPool(
+            currentLanguage,
+            topic,
+            60,
+            duration === '30plus' ? undefined : 3600,
+          );
+
+          items = rankPool(
+            broaderRows,
+            currentLanguage,
+            topic,
+            duration,
+            history,
+            excludedIds,
+            safeCount,
+          );
+          relaxedDuration = items.length > 0;
+        }
 
         return {
           language: currentLanguage,
@@ -281,19 +455,23 @@ export async function getLanguageRecommendations({
                 ? 'partial'
                 : 'empty',
           warnings:
-            items.length >= safeCount
-              ? []
-              : [
-                  items.length
-                    ? '当前素材池中符合条件的内容不足。'
-                    : '当前素材池中暂时没有符合条件的内容。',
-                ],
+            relaxedDuration
+              ? ['严格时长暂无结果，已保留语言和主题，仅放宽时长。']
+              : items.length >= safeCount
+                ? []
+                : [
+                    items.length
+                      ? '当前素材池中符合条件的内容不足。'
+                      : '当前素材池中暂时没有符合条件的内容。',
+                  ],
           steps: [
             {
               platform: 'supabase',
               status: 'ready',
               matched: items.length,
-              message: '从 Supabase 听学素材池筛选',
+              message: relaxedDuration
+                ? '从 Supabase 素材池筛选；仅放宽时长'
+                : '从 Supabase 听学素材池严格筛选',
             },
           ],
         } satisfies RecommendationGroup;
