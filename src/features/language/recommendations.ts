@@ -151,14 +151,18 @@ function isExcluded(
 }
 
 function normalizedEvidence(item: SupabaseListeningRow) {
+  // 只使用原始可见元信息；绝不使用 reason/topic 等由旧规则推断出来的字段，
+  // 否则会出现“旧标签证明旧标签正确”的自我验证。
   return [
     item.title,
     item.description ?? '',
-    item.reason ?? '',
-    item.creator,
   ]
     .join(' ')
     .toLowerCase();
+}
+
+function titleEvidence(item: SupabaseListeningRow) {
+  return item.title.toLowerCase();
 }
 
 function hasAny(text: string, patterns: RegExp[]) {
@@ -175,9 +179,10 @@ function matchesLanguageEvidence(
     const strong = [
       /全程粤语/i,
       /全粤语/i,
-      /粤语(访谈|采访|对谈|聊天|播客|vlog|日常|分享|讲解|纪录|节目)/i,
-      /(广东话|广州话).*(访谈|采访|对谈|聊天|播客|vlog|日常|分享|节目)?/i,
-      /cantonese/i,
+      /粤语(访谈|采访|对谈|聊天|播客|vlog|日常|分享|节目)/i,
+      /(广东话|广州话)(访谈|采访|对谈|聊天|播客|vlog|日常|分享|节目)/i,
+      /cantonese\s+(podcast|interview|conversation|chat|vlog|talk)/i,
+      /(podcast|interview|conversation|chat|vlog|talk)\s+in\s+cantonese/i,
     ];
 
     const bad = [
@@ -223,6 +228,7 @@ function matchesLanguageEvidence(
 
 function matchesTopicEvidence(item: SupabaseListeningRow, topic: Topic) {
   const text = normalizedEvidence(item);
+  const title = titleEvidence(item);
 
   const rules: Record<Topic, RegExp[]> = {
     daily: [
@@ -251,10 +257,10 @@ function matchesTopicEvidence(item: SupabaseListeningRow, topic: Topic) {
     ],
   };
 
-  if (!hasAny(text, rules[topic])) return false;
-
-  // “聊天访谈”专门拦截人物故事、故事讲述、剧情/解说等伪访谈。
+  // “聊天访谈”要求标题本身能证明是对话型内容。
+  // 不能依赖 description/reason 里的搜索词或旧分类标签。
   if (topic === 'conversation') {
+    if (!hasAny(title, rules.conversation)) return false;
     const obviousNonConversation = [
       /人物故事/i,
       /明星故事/i,
@@ -266,10 +272,11 @@ function matchesTopicEvidence(item: SupabaseListeningRow, topic: Topic) {
       /盘点/i,
       /混剪/i,
     ];
-    if (hasAny(text, obviousNonConversation)) return false;
+    if (hasAny(title, obviousNonConversation)) return false;
+    return true;
   }
 
-  return true;
+  return hasAny(text, rules[topic]);
 }
 
 function passesStrictMetadataGuard(
