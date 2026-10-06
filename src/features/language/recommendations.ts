@@ -173,46 +173,43 @@ function matchesLanguageEvidence(
   item: SupabaseListeningRow,
   language: Exclude<Language, 'both'>,
 ) {
-  const text = normalizedEvidence(item);
+  // 语言证据只认标题本身，避免 description/search keyword/旧标签污染。
+  const title = titleEvidence(item);
 
   if (language === 'cantonese') {
-    const strong = [
+    const positive = [
       /全程粤语/i,
       /全粤语/i,
-      /粤语(访谈|采访|对谈|聊天|播客|vlog|日常|分享|节目)/i,
-      /(广东话|广州话)(访谈|采访|对谈|聊天|播客|vlog|日常|分享|节目)/i,
-      /cantonese\s+(podcast|interview|conversation|chat|vlog|talk)/i,
-      /(podcast|interview|conversation|chat|vlog|talk)\s+in\s+cantonese/i,
+      /粤语/i,
+      /广东话/i,
+      /广州话/i,
+      /cantonese/i,
     ];
 
-    const bad = [
+    const negative = [
       /粤语字幕/i,
-      /中文字幕.*粤语/i,
+      /粤语教学/i,
+      /学粤语/i,
+      /粤语教程/i,
       /粤语配音/i,
       /ai.?配音/i,
       /ai.?粤语/i,
       /tts/i,
       /语音克隆/i,
-      /粤语教学/i,
-      /学粤语/i,
-      /粤语教程/i,
     ];
 
-    return hasAny(text, strong) && !hasAny(text, bad);
+    return hasAny(title, positive) && !hasAny(title, negative);
   }
 
-  const strong = [
+  const positive = [
+    /\benglish\b/i,
     /全程英文/i,
     /全英文/i,
-    /english\s+(vlog|podcast|interview|conversation|chat|talk|speaking)/i,
-    /(podcast|interview|conversation|chat|talk)\s+in\s+english/i,
-    /speaking\s+english/i,
-    /in\s+english/i,
-    /英文(访谈|采访|对谈|播客|vlog)/i,
-    /英语(访谈|采访|对谈|播客|vlog)/i,
+    /英文/i,
+    /英语/i,
   ];
 
-  const bad = [
+  const negative = [
     /英文字幕/i,
     /英语字幕/i,
     /中英字幕/i,
@@ -223,7 +220,7 @@ function matchesLanguageEvidence(
     /英语教程/i,
   ];
 
-  return hasAny(text, strong) && !hasAny(text, bad);
+  return hasAny(title, positive) && !hasAny(title, negative);
 }
 
 function matchesTopicEvidence(item: SupabaseListeningRow, topic: Topic) {
@@ -238,7 +235,16 @@ function matchesTopicEvidence(item: SupabaseListeningRow, topic: Topic) {
       /校园/i, /大学/i, /学生/i, /学习/i, /留学/i, /课堂/i, /study/i, /school/i, /college/i, /university/i,
     ],
     conversation: [
-      /访谈/i, /采访/i, /对谈/i, /聊天/i, /播客/i, /podcast/i, /interview/i, /conversation/i, /chat/i, /talk show/i,
+      /访谈/i,
+      /采访/i,
+      /对谈/i,
+      /聊天/i,
+      /播客/i,
+      /podcast/i,
+      /interview/i,
+      /conversation/i,
+      /\bchat\b/i,
+      /talk show/i,
     ],
     food_travel: [
       /美食/i, /吃/i, /餐厅/i, /探店/i, /旅行/i, /旅游/i, /trip/i, /travel/i, /food/i, /restaurant/i,
