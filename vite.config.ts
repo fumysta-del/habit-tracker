@@ -1,8 +1,11 @@
 ﻿import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
+// GitHub Pages 使用 /habit-tracker/；本地和 Vercel 继续使用 /
+const isGitHubPages = process.env.GITHUB_PAGES === 'true'
+
 export default defineConfig({
+  base: isGitHubPages ? '/habit-tracker/' : '/',
   plugins: [react()],
   server: {
     fs: {
