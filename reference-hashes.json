@@ -1,0 +1,362 @@
+[
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": ".env",
+    "Hash": "093C27B75626DFBA89904EF695E3DE32F0D6D3FC74027B997D35A2B2F6003BE1"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": ".gitignore",
+    "Hash": "A54D458880689C72FE01B2AD318DFB6ED9C1E6DB0CFFA932205731810CBAC765"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": ".oxlintrc.json",
+    "Hash": "B4D344818A1E1BF43997E4744A9153C8EEF770C98B58229CD86363DABB85DED4"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "DESIGN_SYSTEM.md",
+    "Hash": "B037C0B4A3C02A9929536806AB182E35385FCC603C65F72A9DF7AB16E865FF9F"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "index.html",
+    "Hash": "42B12B3EA9A10B80781DAA4D090D03357A8384786AC165F356371915CA0EB5B4"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "package.json",
+    "Hash": "70E7684AD7BBAC5A30937C99612DF2BC68A28147EB03EDAF0DBC884F6B1143F4"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "pnpm-lock.yaml",
+    "Hash": "3B692AC7429A43B2C531699936DFC1B715D842844160688D9BAEC4C8AE2227D2"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "PROJECT_MAP.md",
+    "Hash": "F2FA6333472604B0A53030CBD36F1E6505C23A273B10895AE3B7B7DDA6FF2DA7"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "README.md",
+    "Hash": "FA8AAC78B8BE1993010B57F41000A243ECBA006F6731513FE4EC91E788BF2517"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "tsconfig.app.json",
+    "Hash": "A44A1E8854766339169E5A9C6DCD93B34A025CC482BF1DAE308D596C474996FD"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "tsconfig.json",
+    "Hash": "770B4140BBB581E2DFD9EA9946FFC9C75A1D86BA7D2DB5F77C83E37CBDF9D808"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "tsconfig.node.json",
+    "Hash": "D366CC0827139DB39C61815F22491BBFDA56C654354A42AD7795143D314E45E8"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "vite.config.ts",
+    "Hash": "4D36DB3522A7B2DD10E0936E1004373C7EE65F10F7CD7920CD76410459C15A45"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\App.css",
+    "Hash": "0C1ED9D600EE63D6B5101330C3ABE3BFDBC7A7D3F0A2D3E2DE7DCFDC6BBFC8B1"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\App.tsx",
+    "Hash": "C5E0FA467E8B63E23BB0C88B03E6C9428041695AE30981418A8E24ECC0828184"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\index.css",
+    "Hash": "45BECBFF5EA09939872A891ED8A1B0FA578BFF12B66B9C6DDA9C34297EB0BA7C"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\main.tsx",
+    "Hash": "C89383BAAB814E1388BA5D9AA211B237BA9A35BF0A07EF3E73364A7FFF84361B"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\storage.ts",
+    "Hash": "4B8FD868D9EFFA961FB2CBB411FFF7C80EC67C60F2B49CC38FC6E862F9FD5457"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\supabase.ts",
+    "Hash": "EB51D796B94B89FFA535B3C3F01687B27B5A571E8F302839CFF7D3F7888F90C0"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\vite-env.d.ts",
+    "Hash": "424FAF9241DD699DDA995B367ED36665732DA1E6EC1F33B2FD40394488ECAC92"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\assets\\hero.png",
+    "Hash": "881FFBCAAFC212E49ADDAD08846A5B82761355FA20624253AF3477BA33262C5C"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\assets\\react.svg",
+    "Hash": "35EF61ED53B323AE94A16A8EC659B3D0AF3880698791133F23B084085AB1C2E5"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\assets\\vite.svg",
+    "Hash": "5BE21ACD42EB7B896E517F4E0F0F11EB5C5D9E54FBBCEBE9453F033008FCCA6F"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\ActionRecords.tsx",
+    "Hash": "44FF538C6E62E6B8EE8AC72F8A9C064727B605E7617A82C47CF67C6123404902"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\ActivityRing.tsx",
+    "Hash": "EF97000C138BF500967BCDFBF318C7B739C3CD3336524ABB018B12DB48847AA4"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\BottomNav.tsx",
+    "Hash": "C8EE3BB59762441893254CD4062A94FAD4969DA10F0EC7CF744F84FD08D66244"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\DailyActions.tsx",
+    "Hash": "E17DBA768A6091CC69BD8F474287DFB39D7060E8102909A75AF7B0BE410EFF8D"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\DailySummary.tsx",
+    "Hash": "668B093C739F2EED579F1FD84D8B8D26A667926897BCF3D1EC3A3614C242EB85"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\DecorativeBg.tsx",
+    "Hash": "A63B781C719946721597CE65DAF1408393FEB23E97AA52E6310B656CC6EEB59A"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\EnergyCard.tsx",
+    "Hash": "E5DEA02D58F3D8A14F14F592FB625CCDDD3FF97E74695A21FC2EE26FE65E8CC3"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\EnergyIndicator.tsx",
+    "Hash": "A54C39FF189991CB97A9B6175FEA649BA98463262F8C55A70FC39BED77695AB1"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\EnergyStatusCard.tsx",
+    "Hash": "29AA507E4B8193770A5B87F8E1FE3AC37CB79A978A0B83026DAFDCA887A752F6"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\HamburgerMenu.tsx",
+    "Hash": "64EC3815C6E9533E36E38FD56E3C18FA5CEC4DD38FDDF2D06D7B170F03357F4A"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\LevelCard.tsx",
+    "Hash": "67B55B29316A2600D2DC1193940EF0791E6D361B4A3E37CB9DE7AF89C07469B2"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\LevelHero.tsx",
+    "Hash": "6EDFE7B07CD32959D580031D19FC751EDE01E91254FC5C4AB338CC35B6C190CF"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\TaskInput.tsx",
+    "Hash": "FD8F4FC49CEF907944493C07F527B356BF05A1DAAFD3F736C03A1A8795784DFD"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\TaskList.tsx",
+    "Hash": "76B47FC8DF989A720E3C274DF84DCFEC8AA35508FC5B1C7A6CA2E9B759551D63"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\TimeTracker.tsx",
+    "Hash": "08A49102BF7EB515368D22344C7CD0B11D22A3AC42B31DDC04B2F867E46CA03A"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\action\\ActionEvaluationModal.tsx",
+    "Hash": "34E6459AEC16A1465E7EC2544B6D157D261FC34C8C19D0A8DC9700B8D7DC9CFC"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\action\\ActionHintMarquee.tsx",
+    "Hash": "AC926B08D1B23A0D77CE2C23F44F5C1BD2B9BDFB3D1F0A769333D4A41093CB5C"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\growth\\AttributePanel.tsx",
+    "Hash": "ADA80ECE02CC8092D51767B60F625E79CAF37B661210CF87152103598980320E"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\growth\\GrowthStats.tsx",
+    "Hash": "40DA5E7F14891F7FAAA48DC0181D11D2749AABD016BC3F4F43CF368B305D8FC8"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\growth\\WeeklyGrowth.tsx",
+    "Hash": "B62B9AE569F60A2E4F2C8FA7F173035BBC319D0415F28DA4CDA8C2DAD1F0EC27"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\profile\\AchievementSeal.tsx",
+    "Hash": "CE3F5384EC13337783F872EE159F48FBB7EFEB2B88FECE23D21E86F1DE8A0FCA"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\profile\\CharacterCard.tsx",
+    "Hash": "827BE66E5ED98049E5C8934CDC9738909E7FDC27BD38AB5A7319D7D98BF5F501"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\profile\\ProfileStats.tsx",
+    "Hash": "47B7A23AD03393709669AE1B59DB5A3E872C207117FC4A1F6C68A5B822E94516"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\profile\\SealWall.tsx",
+    "Hash": "AB8CB2FAF1B05CC1D870E915C3D5F47BDFC8AF3D2185ECDDCE025B352DAFFC07"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\components\\tasks\\QuestRoadmap.tsx",
+    "Hash": "98BDB07EA9FF732C72438D776C53FFD6E871166BB3E78EAE8568E5F480779315"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\pages\\GrowthPage.tsx",
+    "Hash": "327C0DCEE71A6368054458FA7F213BC2C992893E74C0DF3BECE92BD540277A47"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\pages\\HomePage.tsx",
+    "Hash": "9C4587964C2566D459690E95463C278EF996A430726C5BCCCFF8C5DEC0858563"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\pages\\ProfilePage.tsx",
+    "Hash": "EB22EDDB1DFB805A01EE2F3126EA43A8AEEB65A52C2876A688DE240DD92ECDFE"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\pages\\TasksPage.tsx",
+    "Hash": "A7D3C05A75109C3906804350E8880BDA4446086900FEB9623FB61E832CFBD846"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\styles\\global.css",
+    "Hash": "369E372DD116D99307460B2F9F7BDE2F180915FB6567901323284FDCF8C1C504"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\styles\\tokens.css",
+    "Hash": "CEFEE5694CC4C24D11586FE8B834420666F6212E9B759CAE6D537E626ADE10D5"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "src\\utils\\actionEvaluator.ts",
+    "Hash": "51C1564ABCADBC301A5F99834E9C8070EE8713AE861274121E6C0853853C1C5A"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "public\\favicon.svg",
+    "Hash": "61BC9A161DE58248288E6905425D7180F0624C2865007B97D763FDAC12043A66"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "public\\icons.svg",
+    "Hash": "B45FA506195CFCDEF406BA9F0C77B36DDC1A7C224040926EC70ABC2FDEA7B93A"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "public\\assets\\badges\\avatar.png",
+    "Hash": "36AFBB6DAB17852366666667B2B7D061017818703B10C5F0F2748F6B89BAEF86"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "public\\assets\\badges\\badge-creativity.png",
+    "Hash": "7E7EBEBDE51D46C0081319A97BD763DECA42790FD5EBB6C398A6746052564EE9"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "public\\assets\\badges\\badge-discipline.png",
+    "Hash": "9E61C3DC6BF79DFFB5C5F2B21BC94A1EDC4E8C31B7A38492ED45B05CD27956C6"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "public\\assets\\badges\\badge-knowledge.png",
+    "Hash": "D8B2AAC977BB3E387A43E499EDA6642FB781DF484886405693B63EDF9593B6AB"
+  },
+  {
+    "Root": "E:\\habit-tracker",
+    "Path": "public\\assets\\badges\\badge-sport.png",
+    "Hash": "05A0FFBC62BE6A9A3404D1787609C7572C77BBA82BF66E30D1826E1A9A3E4EE8"
+  },
+  {
+    "Root": "E:\\AI-Demos\\particle-ribbon-component",
+    "Path": "package.json",
+    "Hash": "65604607FEE70F480278DCDFB1311307A5FAA69A611A0088901E946B22B2AF68"
+  },
+  {
+    "Root": "E:\\AI-Demos\\particle-ribbon-component",
+    "Path": "README.md",
+    "Hash": "C1A1029840D76A014EF0312688D8E7D7A7A21A6CDA07A07018AAF3D179D0C39F"
+  },
+  {
+    "Root": "E:\\AI-Demos\\particle-ribbon-component",
+    "Path": "server.mjs",
+    "Hash": "C7E35E4FE76F41ADFCB0080909B34101F914C788A37145084C49E409B2DF3AD9"
+  },
+  {
+    "Root": "E:\\AI-Demos\\particle-ribbon-component",
+    "Path": "demo\\demo.js",
+    "Hash": "2A1C727251F7AEF586CB90B3767A07EF4DD9993C4C936E450A58FCC3BC704744"
+  },
+  {
+    "Root": "E:\\AI-Demos\\particle-ribbon-component",
+    "Path": "demo\\index.html",
+    "Hash": "0370EB2E667BF4E34D2D52A9DA942B9FDC437093E5F8B2D52C811DCC790F97E1"
+  },
+  {
+    "Root": "E:\\AI-Demos\\particle-ribbon-component",
+    "Path": "demo\\style.css",
+    "Hash": "283E84AA44CCCC60142C294B6B9DD45975580E2081C47F0D98BEE2E9D9A2DC58"
+  },
+  {
+    "Root": "E:\\AI-Demos\\particle-ribbon-component",
+    "Path": "src\\config.js",
+    "Hash": "2E1B5F822E9935A2AE2943623F7C77930FFDC4C57A9FF544D0CD3A9CB768BEC1"
+  },
+  {
+    "Root": "E:\\AI-Demos\\particle-ribbon-component",
+    "Path": "src\\index.js",
+    "Hash": "73BA7CB0D694EE6092E58EE3CEB36EC266675B7F3151E6CEAA3ADEF30BC22C35"
+  },
+  {
+    "Root": "E:\\AI-Demos\\particle-ribbon-component",
+    "Path": "src\\ParticleEffect.js",
+    "Hash": "F2E6EA787D729D088CF67CAA09F4AF0D9DC9A8FFFD6FF52849877CF46C4ACAC3"
+  },
+  {
+    "Root": "E:\\AI-Demos\\particle-ribbon-component",
+    "Path": "src\\shaders\\index.js",
+    "Hash": "BFCFC73F69E1AAC90ABD2578CA22AFD743CC0E6436696DECAC935AB467409D9A"
+  }
+]

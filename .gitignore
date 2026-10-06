@@ -1,4 +1,5 @@
 .env
+.listening-cache/
 
 # Dependencies
 node_modules
@@ -27,3 +28,22 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+.playwright-cli/
+
+server/__pycache__/
+
+*.pyc
+
+.env.import
+
+# Local listening-pool maintenance
+.env.import
+retry_logs/
+listening_pool_audit.csv
+audit_listening_pool.py
+fill_listening_gaps*.py
+clean_listening_pool*.py
+diagnose_fill_run.py
+retry_failed_jobs.py
+import_listening_pool.py

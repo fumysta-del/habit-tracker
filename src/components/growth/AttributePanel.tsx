@@ -1,4 +1,5 @@
 interface Props {
+  title?: string;
   focus: number; discipline: number;
   energy: number; creativity: number;
 }
@@ -23,7 +24,7 @@ const card = (imgKey: string, label: string, val: number) => (
 export function AttributePanel(p: Props) {
   return (
     <div className="attr-panel">
-      <h3 className="panel-title">属性</h3>
+      <h3 className="panel-title">{p.title ?? '属性'}</h3>
       <div className="attr-grid">
         {card("focus", "专注", p.focus)}
         {card("discipline", "自律", p.discipline)}

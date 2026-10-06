@@ -19,6 +19,7 @@ import { TasksPage } from "./pages/TasksPage";
 import { GrowthPage } from "./pages/GrowthPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { DecorativeBg } from "./components/DecorativeBg";
+import { ParticleBackground } from "./components/ParticleBackground";
 import { BottomNav } from "./components/BottomNav";
 import { HamburgerMenu } from "./components/HamburgerMenu";
 import { evaluateAction, getAttrTotalFromLog, type EvalResult, type EvalLogEntry } from "./utils/actionEvaluator";
@@ -481,6 +482,7 @@ const doMinimalAction = (action: string) => {
   // 鈹€鈹€ Render 鈹€鈹€
   return (
     <><DecorativeBg />
+    {(activeTab === "home" || activeTab === "profile") && <ParticleBackground />}
       <HamburgerMenu
         isOpen={menuOpen}
         onToggle={() => setMenuOpen((p) => !p)}
