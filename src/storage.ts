@@ -127,12 +127,6 @@ export function loadData(): AppData {
             ...task,
             xp: Number.isFinite(task.xp) ? task.xp : DEFAULT_TASKS.find((item) => item.text === task.text)?.xp ?? 10,
           }));
-          for (const dt of DEFAULT_TASKS) {
-            if (!data.tasks.some((t) => t.text === dt.text)) {
-              const maxId = data.tasks.reduce((m, t) => Math.max(m, t.id), 0);
-              data.tasks.push({ id: maxId + 1, text: dt.text, xp: dt.xp });
-            }
-          }
           console.log("[TASKS] After merge:", data.tasks.length, "tasks");
           console.log("[LOAD] after merge tasks:", data.tasks);
           console.log("[LOAD] final tasks:", data.tasks);
@@ -270,3 +264,4 @@ export async function loadFromCloud(username: string): Promise<AppData | null> {
   console.log("[storage] loadFromCloud: not configured", username);
   return null;
 }
+

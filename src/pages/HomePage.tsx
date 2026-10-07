@@ -1,9 +1,8 @@
 import { EnergyStatusCard } from "../components/EnergyStatusCard";
 import { DailyActions } from "../components/DailyActions";
 import { ActionRecords } from "../components/ActionRecords";
-import { TaskInput } from "../components/TaskInput";
 import { TimeTracker } from "../components/TimeTracker";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ActionHintMarquee } from "../components/action/ActionHintMarquee";
 import type { Task, DayStats, DailyTaskRecord, MinimalRecord } from "../storage";
 
@@ -29,6 +28,59 @@ function fmtDate(): string {
 export function HomePage(p: HomePageProps) {
   const [evalInput, setEvalInput] = useState("");
   const [evalFocused, setEvalFocused] = useState(false);
+
+  const [voiceReady, setVoiceReady] = useState(false);
+  const [voiceLoaded, setVoiceLoaded] = useState(false);
+  const voiceAutoStartRef = useRef(false);
+  const [voiceRecording, setVoiceRecording] = useState(false);
+  const voiceFrameRef = useRef<HTMLIFrameElement | null>(null);
+
+  useEffect(() => {
+    function onVoiceMessage(event: MessageEvent) {
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data?.type === "voice-asr-ready") {
+        setVoiceReady(true);
+
+        if (voiceAutoStartRef.current) {
+          voiceAutoStartRef.current = false;
+
+          const target = voiceFrameRef.current?.contentWindow;
+          if (target) {
+            target.postMessage({ type: "voice-asr-start" }, window.location.origin);
+            setVoiceRecording(true);
+          }
+        }
+      }
+
+      if (event.data?.type === "voice-asr-result") {
+        const text = String(event.data.text || "").trim();
+        if (text) setEvalInput(text);
+        setVoiceRecording(false);
+      }
+    }
+
+    window.addEventListener("message", onVoiceMessage);
+    return () => window.removeEventListener("message", onVoiceMessage);
+  }, []);
+
+  function toggleVoice() {
+    if (!voiceLoaded) {
+      voiceAutoStartRef.current = true;
+      setVoiceLoaded(true);
+      return;
+    }
+
+    const target = voiceFrameRef.current?.contentWindow;
+    if (!target || !voiceReady) return;
+
+    if (voiceRecording) {
+      target.postMessage({ type: "voice-asr-stop" }, window.location.origin);
+    } else {
+      target.postMessage({ type: "voice-asr-start" }, window.location.origin);
+      setVoiceRecording(true);
+    }
+  }
   return (
     <div className="home-page">
       <header className="home-header">
@@ -62,6 +114,33 @@ export function HomePage(p: HomePageProps) {
             onKeyDown={(e) => { if (e.key === "Enter" && evalInput.trim()) { p.onEvaluateAction(evalInput.trim()); setEvalInput(""); } }}
           />
           <button
+  type="button"
+  className={"eval-voice-btn" + (voiceRecording ? " recording" : "")}
+  title={
+    !voiceLoaded
+      ? "加载语音模型"
+      : !voiceReady
+        ? "语音模型加载中"
+        : voiceRecording
+          ? "停止录音并识别"
+          : "开始语音输入"
+  }
+  disabled={voiceLoaded && !voiceReady}
+  onClick={toggleVoice}
+>
+  {voiceRecording ? "正在听…" : !voiceLoaded ? "🎙️" : !voiceReady ? "加载中…" : "🎙️"}
+</button>
+
+{voiceLoaded && (
+  <iframe
+    ref={voiceFrameRef}
+    src={`${import.meta.env.BASE_URL}voice-asr/index.html`}
+    title="本地语音识别"
+    aria-hidden="true"
+    style={{ display: "none" }}
+  />
+)}
+          <button
             className="eval-submit-btn"
             disabled={!evalInput.trim()}
             onClick={() => { if (evalInput.trim()) { p.onEvaluateAction(evalInput.trim()); setEvalInput(""); } }}
@@ -75,7 +154,6 @@ export function HomePage(p: HomePageProps) {
         <h3 className="section-title">快速操作</h3>
         <DailyActions onClick={p.doMinimalAction} />
         <ActionRecords records={p.todayRecords} onDelete={p.deleteRecord} />
-        <TaskInput value={p.input} onChange={p.setInput} onAdd={p.addTask} />
         <TimeTracker timeMinutes={p.todayStats.timeMinutes} isRunning={p.isRunning} onStart={p.startTimer} onStop={p.stopTimer} />
       </section>
     </div>

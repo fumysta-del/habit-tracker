@@ -508,7 +508,11 @@ const doMinimalAction = (action: string) => {
         <TasksPage
           tasks={tasks}
           dailyTaskRecords={dailyTaskRecords}
-          growthEvents={evalLog}
+          growthEvents={evalLog.filter((ev) => {
+  const d = new Date(ev.timestamp);
+  const localDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return localDate === todayStr;
+})}
           toggleTask={toggleTask} deleteTask={deleteTask}
         />
       ) : activeTab === "growth" ? (
