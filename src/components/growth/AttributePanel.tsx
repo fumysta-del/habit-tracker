@@ -4,11 +4,13 @@ interface Props {
   energy: number; creativity: number;
 }
 
+const ASSET_BASE = import.meta.env.BASE_URL;
+
 const IMGS: Record<string, string> = {
-  focus: "/assets/badges/badge-knowledge.png?v=2",
-  discipline: "/assets/badges/badge-discipline.png?v=2",
-  energy: "/assets/badges/badge-sport.png?v=2",
-  creativity: "/assets/badges/badge-creativity.png?v=2",
+  focus: `${ASSET_BASE}assets/badges/badge-knowledge.png?v=2`,
+  discipline: `${ASSET_BASE}assets/badges/badge-discipline.png?v=2`,
+  energy: `${ASSET_BASE}assets/badges/badge-sport.png?v=2`,
+  creativity: `${ASSET_BASE}assets/badges/badge-creativity.png?v=2`,
 };
 
 const card = (imgKey: string, label: string, val: number) => (

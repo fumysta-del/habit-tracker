@@ -202,7 +202,19 @@ export function HomePage(p: HomePageProps) {
           pointerEvents: "none"
         }}
       >
-        语音模型准备中…
+        <div style={{ textAlign: "center", lineHeight: 1.7 }}>
+          <div>语音模型准备中…</div>
+          <div
+            style={{
+              marginTop: "5px",
+              fontSize: "12px",
+              letterSpacing: "0.02em",
+              opacity: 0.68
+            }}
+          >
+            首次需下载约 245 MB，后续将自动使用本地缓存
+          </div>
+        </div>
       </div>
     )}
   </div>
