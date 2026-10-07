@@ -64,6 +64,35 @@ export function HomePage(p: HomePageProps) {
     return () => window.removeEventListener("message", onVoiceMessage);
   }, []);
 
+  useEffect(() => {
+    if (!voiceLoaded || voiceReady) return;
+
+    const timer = window.setInterval(() => {
+      try {
+        const frameWindow = voiceFrameRef.current?.contentWindow as any;
+
+        if (frameWindow?.__VOICE_ASR_READY__) {
+          setVoiceReady(true);
+
+          if (voiceAutoStartRef.current) {
+            voiceAutoStartRef.current = false;
+            frameWindow.postMessage(
+              { type: "voice-asr-start" },
+              window.location.origin
+            );
+            setVoiceRecording(true);
+          }
+
+          window.clearInterval(timer);
+        }
+      } catch {
+        // Ignore transient iframe access errors while loading.
+      }
+    }, 300);
+
+    return () => window.clearInterval(timer);
+  }, [voiceLoaded, voiceReady]);
+
   function toggleVoice() {
     if (!voiceLoaded) {
       voiceAutoStartRef.current = true;

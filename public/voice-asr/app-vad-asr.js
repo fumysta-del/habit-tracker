@@ -77,6 +77,9 @@ Module.onRuntimeInitialized = function() {
 
   Module.setStatus('');
 
+  // Expose readiness for mobile browsers that may miss postMessage.
+  window.__VOICE_ASR_READY__ = true;
+
   if (window.parent !== window) {
     window.parent.postMessage({ type: 'voice-asr-ready' }, window.location.origin);
   }
