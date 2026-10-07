@@ -168,13 +168,14 @@ export function HomePage(p: HomePageProps) {
     aria-hidden="true"
     style={{
       position: "fixed",
-      width: "1px",
-      height: "1px",
-      left: "-9999px",
-      top: "-9999px",
-      opacity: 0,
+      width: "2px",
+      height: "2px",
+      right: "0",
+      bottom: "0",
+      opacity: 0.01,
       pointerEvents: "none",
-      border: 0
+      border: 0,
+      zIndex: -1
     }}
   />
 )}
