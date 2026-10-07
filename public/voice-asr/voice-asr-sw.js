@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habit-voice-asr-v1';
+const CACHE_NAME = 'habit-voice-asr-v2';
 
 const CACHE_FILES = new Set([
   'sherpa-onnx-wasm-main-vad-asr.data',
@@ -14,7 +14,18 @@ self.addEventListener('install', () => {
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    Promise.all([
+      self.clients.claim(),
+      caches.keys().then(names =>
+        Promise.all(
+          names
+            .filter(name => name.startsWith('habit-voice-asr-') && name !== CACHE_NAME)
+            .map(name => caches.delete(name))
+        )
+      )
+    ])
+  );
 });
 
 self.addEventListener('fetch', (event) => {
@@ -23,7 +34,10 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   const filename = url.pathname.split('/').pop();
 
-  if (url.origin !== self.location.origin || !CACHE_FILES.has(filename)) {
+  if (
+    url.origin !== self.location.origin ||
+    !CACHE_FILES.has(filename)
+  ) {
     return;
   }
 
@@ -45,12 +59,15 @@ self.addEventListener('fetch', (event) => {
       const response = await fetch(event.request);
 
       if (response.ok) {
-        try {
-          await cache.put(event.request, response.clone());
-          console.log('[Voice ASR] cached:', filename);
-        } catch (err) {
-          console.error('[Voice ASR] cache failed:', filename, err);
-        }
+        // 关键：不要等待缓存完成。
+        // 先立即把 response 交给 sherpa，同时后台写缓存。
+        cache.put(event.request, response.clone())
+          .then(() => {
+            console.log('[Voice ASR] cached:', filename);
+          })
+          .catch((err) => {
+            console.error('[Voice ASR] cache failed:', filename, err);
+          });
       }
 
       return response;
