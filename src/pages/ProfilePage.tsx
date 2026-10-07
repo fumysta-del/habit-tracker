@@ -2,6 +2,7 @@ import type { DayStats } from "../storage";
 import { LanguageLearningCard } from "../components/profile/LanguageLearningCard";
 import { ParticleColorSetting } from "../components/profile/ParticleColorSetting";
 import { AttributePanel } from "../components/growth/AttributePanel";
+import { CharacterCard } from "../components/profile/CharacterCard";
 
 interface ProfilePageProps {
   level: number; xp: number; streak: number;
@@ -32,6 +33,7 @@ export function ProfilePage(p: ProfilePageProps) {
       <header className="profile-header">
         <span className="profile-badge">角色档案</span>
       </header>
+      <CharacterCard level={p.level} xp={p.xp} />
       <AttributePanel title="能力值" focus={Math.min(100, focus + focusBonus)} discipline={Math.min(100, discipline + disciplineBonus)} energy={Math.min(100, energy + energyBonus)} creativity={Math.min(100, creativity + creativityBonus)} />
       <LanguageLearningCard />
       <ParticleColorSetting />
