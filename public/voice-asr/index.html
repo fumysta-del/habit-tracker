@@ -74,8 +74,48 @@
     </ul>
   </div>
 
-  <script src="sherpa-onnx-asr.js"></script>
-  <script src="sherpa-onnx-vad.js"></script>
-  <script src="app-vad-asr.js"></script>
-  <script src="sherpa-onnx-wasm-main-vad-asr.js"></script>
+  <script>
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.body.appendChild(script);
+      });
+    }
+
+    async function bootVoiceASR() {
+      try {
+        if ('serviceWorker' in navigator) {
+          await navigator.serviceWorker.register('./voice-asr-sw.js', {
+            scope: './'
+          });
+
+          await navigator.serviceWorker.ready;
+
+          // 第一次安装 Service Worker 后刷新一次，
+          // 确保下面的 245MB 模型请求一定经过缓存层。
+          if (!navigator.serviceWorker.controller) {
+            window.location.reload();
+            return;
+          }
+        }
+
+        await loadScript('./sherpa-onnx-asr.js');
+        await loadScript('./sherpa-onnx-vad.js');
+        await loadScript('./app-vad-asr.js');
+        await loadScript('./sherpa-onnx-wasm-main-vad-asr.js');
+      } catch (err) {
+        console.error('Voice ASR boot failed:', err);
+
+        const status = document.getElementById('status');
+        if (status) {
+          status.textContent = '语音模型启动失败';
+        }
+      }
+    }
+
+    bootVoiceASR();
+  </script>
 </body>
