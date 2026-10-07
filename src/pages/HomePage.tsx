@@ -161,23 +161,51 @@ export function HomePage(p: HomePageProps) {
 </button>
 
 {voiceLoaded && (
-  <iframe
-    ref={voiceFrameRef}
-    src={`${import.meta.env.BASE_URL}voice-asr/index.html`}
-    title="本地语音识别"
-    aria-hidden="true"
+  <div
     style={{
       position: "fixed",
-      width: "2px",
-      height: "2px",
-      right: "0",
-      bottom: "0",
-      opacity: 0.01,
-      pointerEvents: "none",
-      border: 0,
-      zIndex: -1
+      width: "360px",
+      height: "180px",
+      right: voiceReady ? "8px" : "50%",
+      bottom: voiceReady ? "8px" : "24px",
+      transform: voiceReady ? "none" : "translateX(50%)",
+      zIndex: voiceReady ? -1 : 9999,
+      borderRadius: "18px",
+      overflow: "hidden",
+      opacity: voiceReady ? 0.01 : 1,
+      pointerEvents: voiceReady ? "none" : "auto"
     }}
-  />
+  >
+    <iframe
+      ref={voiceFrameRef}
+      src={`${import.meta.env.BASE_URL}voice-asr/index.html`}
+      title="本地语音识别"
+      style={{
+        width: "100%",
+        height: "100%",
+        border: 0
+      }}
+    />
+
+    {!voiceReady && (
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "rgba(247, 243, 236, 0.98)",
+          color: "#8b755d",
+          fontSize: "15px",
+          letterSpacing: "0.08em",
+          pointerEvents: "none"
+        }}
+      >
+        语音模型准备中…
+      </div>
+    )}
+  </div>
 )}
           <button
             className="eval-submit-btn"
