@@ -7,10 +7,10 @@ interface Props {
 const ASSET_BASE = import.meta.env.BASE_URL;
 
 const IMGS: Record<string, string> = {
-  focus: `${ASSET_BASE}assets/badges/badge-knowledge.png?v=2`,
-  discipline: `${ASSET_BASE}assets/badges/badge-discipline.png?v=2`,
-  energy: `${ASSET_BASE}assets/badges/badge-sport.png?v=2`,
-  creativity: `${ASSET_BASE}assets/badges/badge-creativity.png?v=2`,
+  focus: `${ASSET_BASE}assets/badges/badge-knowledge.webp?v=3`,
+  discipline: `${ASSET_BASE}assets/badges/badge-discipline.webp?v=3`,
+  energy: `${ASSET_BASE}assets/badges/badge-sport.webp?v=3`,
+  creativity: `${ASSET_BASE}assets/badges/badge-creativity.webp?v=3`,
 };
 
 const card = (imgKey: string, label: string, val: number) => (
