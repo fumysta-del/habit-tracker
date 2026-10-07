@@ -137,7 +137,16 @@ export function HomePage(p: HomePageProps) {
     src={`${import.meta.env.BASE_URL}voice-asr/index.html`}
     title="本地语音识别"
     aria-hidden="true"
-    style={{ display: "none" }}
+    style={{
+      position: "fixed",
+      width: "1px",
+      height: "1px",
+      left: "-9999px",
+      top: "-9999px",
+      opacity: 0,
+      pointerEvents: "none",
+      border: 0
+    }}
   />
 )}
           <button
