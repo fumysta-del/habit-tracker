@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>课堂记录</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #f7f3ec;
+      color: #554b42;
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+        "Microsoft YaHei", sans-serif;
+    }
+
+    .page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 22px 18px 110px;
+    }
+
+    h1 {
+      margin: 0 0 18px;
+      font-size: 25px;
+      font-weight: 600;
+    }
+
+    .course-input {
+      width: 100%;
+      border: 1px solid rgba(110, 90, 70, .16);
+      background: rgba(255,255,255,.72);
+      border-radius: 14px;
+      padding: 14px 15px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .status-card {
+      margin-top: 16px;
+      padding: 17px;
+      background: rgba(255,255,255,.72);
+      border-radius: 18px;
+      border: 1px solid rgba(110,90,70,.10);
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+    }
+
+    #timer {
+      font-variant-numeric: tabular-nums;
+      font-size: 24px;
+      letter-spacing: .04em;
+    }
+
+    #status {
+      margin-top: 8px;
+      color: #967e66;
+      font-size: 13px;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #aaa;
+      margin-right: 7px;
+    }
+
+    .dot.active {
+      background: #a45f52;
+    }
+
+    .transcript {
+      margin-top: 18px;
+      min-height: 300px;
+      background: rgba(255,255,255,.72);
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid rgba(110,90,70,.10);
+    }
+
+    .empty {
+      color: #aaa096;
+      text-align: center;
+      padding: 80px 10px;
+    }
+
+    .line {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(110,90,70,.08);
+      line-height: 1.7;
+    }
+
+    .line:last-child { border-bottom: 0; }
+
+    .time {
+      color: #aa9581;
+      font-size: 12px;
+      padding-top: 4px;
+    }
+
+    .line.important .text::before {
+      content: "★ ";
+      color: #a45f52;
+    }
+
+    .controls {
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: max(16px, env(safe-area-inset-bottom));
+      width: min(720px, calc(100vw - 24px));
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.3fr;
+      gap: 9px;
+      padding: 10px;
+      border-radius: 20px;
+      background: rgba(247,243,236,.94);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 30px rgba(70,50,30,.12);
+    }
+
+    button {
+      border: 0;
+      min-height: 48px;
+      border-radius: 14px;
+      background: #e9e0d5;
+      color: #66584c;
+      font-size: 14px;
+    }
+
+    button.primary {
+      background: #9c8068;
+      color: white;
+    }
+
+    button:disabled {
+      opacity: .45;
+    }
+
+    .note {
+      margin-top: 9px;
+      font-size: 12px;
+      color: #a09182;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+    <h1>课堂记录</h1>
+
+    <input
+      id="course"
+      class="course-input"
+      placeholder="课程名称，例如：公共关系学"
+    />
+
+    <section class="status-card">
+      <div class="status-row">
+        <div>
+          <span id="dot" class="dot"></span>
+          <span id="stateText">正在准备模型</span>
+        </div>
+        <div id="timer">00:00:00</div>
+      </div>
+
+      <div id="status">模型初始化中…</div>
+
+      <div class="note">
+        每约 12 秒自动识别一次；课堂期间请保持页面在前台，尽量不要锁屏。
+      </div>
+    </section>
+
+    <section id="transcript" class="transcript">
+      <div class="empty">课堂文字会出现在这里</div>
+    </section>
+  </main>
+
+  <div class="controls">
+    <button id="startBtn" class="primary" disabled>开始记录</button>
+    <button id="markBtn" disabled>★ 标重点</button>
+    <button id="finishBtn" disabled>结束并复制</button>
+  </div>
+
+  <script>
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = reject;
+        document.body.appendChild(s);
+      });
+    }
+
+    async function boot() {
+      try {
+        if ('serviceWorker' in navigator) {
+          await navigator.serviceWorker.register('./voice-asr-sw.js', {
+            scope: './'
+          });
+
+          await navigator.serviceWorker.ready;
+
+          if (!navigator.serviceWorker.controller &&
+              !sessionStorage.getItem('class-sw-reloaded')) {
+            sessionStorage.setItem('class-sw-reloaded', '1');
+            location.reload();
+            return;
+          }
+        }
+
+        await loadScript('./sherpa-onnx-asr.js');
+        await loadScript('./sherpa-onnx-vad.js');
+        await loadScript('./class-asr.js');
+        await loadScript('./sherpa-onnx-wasm-main-vad-asr.js');
+      } catch (e) {
+        console.error(e);
+        document.getElementById('status').textContent = '语音模型启动失败';
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>
