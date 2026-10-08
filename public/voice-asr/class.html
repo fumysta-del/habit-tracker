@@ -223,6 +223,24 @@
           }
         }
 
+        window.__VOICE_MODEL_CACHED__ = false;
+
+        try {
+          const cache = await caches.open('habit-voice-asr-v2');
+          const modelUrl = new URL(
+            './sherpa-onnx-wasm-main-vad-asr.data',
+            location.href
+          ).href;
+
+          const cachedModel = await cache.match(modelUrl, {
+            ignoreSearch: true
+          });
+
+          window.__VOICE_MODEL_CACHED__ = !!cachedModel;
+        } catch (e) {
+          console.warn('检查模型缓存失败', e);
+        }
+
         await loadScript('./sherpa-onnx-asr.js');
         await loadScript('./sherpa-onnx-vad.js');
         await loadScript('./class-asr.js');

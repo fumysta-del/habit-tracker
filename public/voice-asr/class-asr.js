@@ -49,7 +49,7 @@ Module.locateFile = function(path, scriptDirectory = '') {
 
 Module.setStatus = function(status) {
   if (status === 'Running...') {
-    status = '模型已下载，正在初始化…';
+    status = '模型载入完成，正在初始化…';
   }
 
   const match =
@@ -64,7 +64,9 @@ Module.setStatus = function(status) {
         ? 0
         : Number((done * 10000n) / total) / 100;
 
-    status = `首次下载模型 ${pct.toFixed(1)}%`;
+    status = window.__VOICE_MODEL_CACHED__
+      ? `正在从本地缓存载入模型 ${pct.toFixed(1)}%`
+      : `首次下载模型 ${pct.toFixed(1)}%`;
   }
 
   if (status) statusEl.textContent = status;
