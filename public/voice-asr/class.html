@@ -155,6 +155,17 @@
       color: #a09182;
       line-height: 1.5;
     }
+
+    .session-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: 14px;
+    }
+
+    .session-actions button {
+      background: rgba(233,224,213,.7);
+    }
   </style>
 </head>
 
@@ -181,6 +192,11 @@
 
       <div class="note">
         每约 12 秒自动识别一次；课堂期间请保持页面在前台，尽量不要锁屏。
+      </div>
+
+      <div class="session-actions">
+        <button id="newBtn">新建课堂</button>
+        <button id="exportBtn" disabled>导出 Markdown</button>
       </div>
     </section>
 

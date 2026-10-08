@@ -7,6 +7,8 @@ const stateText = document.getElementById('stateText');
 const timerEl = document.getElementById('timer');
 const dotEl = document.getElementById('dot');
 const courseEl = document.getElementById('course');
+const newBtn = document.getElementById('newBtn');
+const exportBtn = document.getElementById('exportBtn');
 
 const SAMPLE_RATE = 16000;
 const CHUNK_SECONDS = 12;
@@ -233,6 +235,8 @@ function restoreDraft() {
 }
 
 function renderTranscript() {
+  exportBtn.disabled = segments.length === 0;
+
   if (!segments.length) {
     transcriptEl.innerHTML =
       '<div class="empty">课堂文字会出现在这里</div>';
@@ -616,6 +620,170 @@ finishBtn.onclick = async function() {
       await wakeLock.release();
     } catch (_) {}
   }
+};
+
+function fileDate() {
+  const d = new Date();
+
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0')
+  ].join('-');
+}
+
+function safeFileName(name) {
+  return String(name || '课堂记录')
+    .replace(/[\\/:*?"<>|]/g, '-')
+    .trim() || '课堂记录';
+}
+
+async function exportMarkdown() {
+  if (!segments.length) {
+    statusEl.textContent = '当前还没有课堂文字可以导出';
+    return;
+  }
+
+  const title = safeFileName(
+    courseEl.value.trim() || '课堂记录'
+  );
+
+  const filename =
+    `${title}-${fileDate()}.md`;
+
+  const text = buildExport();
+
+  const file = new File(
+    [text],
+    filename,
+    { type: 'text/markdown;charset=utf-8' }
+  );
+
+  try {
+    if (
+      navigator.share &&
+      navigator.canShare &&
+      navigator.canShare({ files: [file] })
+    ) {
+      await navigator.share({
+        title,
+        files: [file]
+      });
+
+      statusEl.textContent = 'Markdown 已导出';
+      return;
+    }
+  } catch (e) {
+    if (e?.name === 'AbortError') {
+      statusEl.textContent = '已取消导出';
+      return;
+    }
+
+    console.warn('系统分享失败，改用文件下载', e);
+  }
+
+  const blob = new Blob(
+    [text],
+    { type: 'text/markdown;charset=utf-8' }
+  );
+
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 1000);
+
+  statusEl.textContent = 'Markdown 已导出';
+}
+
+exportBtn.onclick = exportMarkdown;
+
+newBtn.onclick = async function() {
+  if (recording) {
+    const ok = confirm(
+      '当前还在录音。确定结束当前录音并新建课堂吗？'
+    );
+
+    if (!ok) return;
+
+    accumulatedMs +=
+      Date.now() - recordingStartedAt;
+
+    recording = false;
+  }
+
+  const hasOldData =
+    segments.length > 0 ||
+    courseEl.value.trim() ||
+    accumulatedMs > 0;
+
+  if (hasOldData) {
+    const ok = confirm(
+      '确定新建课堂吗？当前课堂草稿会被清空。建议先导出 Markdown。'
+    );
+
+    if (!ok) return;
+  }
+
+  if (micStream) {
+    micStream.getTracks().forEach(track =>
+      track.stop()
+    );
+  }
+
+  if (audioCtx) {
+    try {
+      await audioCtx.close();
+    } catch (_) {}
+  }
+
+  micStream = null;
+  micSource = null;
+  processor = null;
+  audioCtx = null;
+
+  recording = false;
+  started = false;
+
+  chunks = [];
+  bufferedSamples = 0;
+
+  queue = [];
+  processing = false;
+
+  segments = [];
+  previousRawText = '';
+
+  accumulatedMs = 0;
+  recordingStartedAt = 0;
+
+  courseEl.value = '';
+
+  localStorage.removeItem(STORAGE_KEY);
+
+  timerEl.textContent = '00:00:00';
+
+  dotEl.classList.remove('active');
+
+  stateText.textContent = '等待开始';
+  statusEl.textContent = '新课堂已创建';
+
+  startBtn.textContent = '开始记录';
+  startBtn.disabled = false;
+
+  markBtn.disabled = true;
+  finishBtn.disabled = true;
+  exportBtn.disabled = true;
+
+  renderTranscript();
 };
 
 courseEl.addEventListener('input', saveDraft);
