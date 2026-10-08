@@ -53,6 +53,19 @@ export function HamburgerMenu({ isOpen, onToggle, activeTab, onNavigate }: Hambu
               </button>
             </li>
           ))}
+          <li>
+            <a className="hamburger-item" href={`${import.meta.env.BASE_URL}pomodoro.html`}
+               style={{ textDecoration: "none" }}>
+              <span className="hamburger-item-icon">🌳</span>
+              <span className="hamburger-item-label">专注养树</span>
+            </a>
+          </li>          <li>
+            <a className="hamburger-item" href={`${import.meta.env.BASE_URL}voice-asr/class.html`}
+               style={{ textDecoration: "none" }}>
+              <span className="hamburger-item-icon">🎙</span>
+              <span className="hamburger-item-label">课堂记录</span>
+            </a>
+          </li>
         </ul>
       </nav>
     </>

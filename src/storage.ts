@@ -191,10 +191,13 @@ export async function syncToSupabase(data: AppData): Promise<SyncResult> {
   const todayActions = data.actions[todayKey] ?? [];
   const todayTaskCompletions = data.dailyTaskRecords?.[today] ?? [];
 
-  const timeMinutesPayload = data.timeRecords.reduce((acc, item) => {
-    acc[item.type] = (acc[item.type] ?? 0) + item.duration;
-    return acc;
-  }, {} as Record<string, any>);
+  // Today must not include study minutes from previous calendar dates.
+  const timeMinutesPayload = data.timeRecords
+    .filter((item) => new Date(item.startTime).toDateString() === todayKey)
+    .reduce((acc, item) => {
+      acc[item.type] = (acc[item.type] ?? 0) + item.duration;
+      return acc;
+    }, {} as Record<string, any>);
   if (todayActions.length > 0) timeMinutesPayload["__actions"] = todayActions;
   if (todayTaskCompletions.length > 0) timeMinutesPayload["__task_completions"] = todayTaskCompletions.filter((r) => r.completed).map((r) => r.taskId);
 

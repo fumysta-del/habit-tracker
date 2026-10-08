@@ -166,12 +166,54 @@
     .session-actions button {
       background: rgba(233,224,213,.7);
     }
+      .pager {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .pager button {
+      padding: 0 14px;
+      min-height: 38px;
+    }
+
+    .pager span {
+      color: #967e66;
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+    }
+      .page-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .page-heading h1 { margin: 0; }
+    .back-link {
+      text-decoration: none;
+      color: #8b755d;
+      background: rgba(255,255,255,.75);
+      border: 1px solid #e8e0d8;
+      border-radius: 999px;
+      padding: 10px 15px;
+      font-size: 13px;
+    }
+    .back-link:hover {
+      background: #e9e0d5;
+    }
   </style>
 </head>
 
 <body>
   <main class="page">
-    <h1>课堂记录</h1>
+    <div class="page-heading">
+      <h1>课堂记录</h1>
+      <a id="backToHome" class="back-link" href="../">← 返回 Habit Tracker</a>
+    </div>
 
     <input
       id="course"
@@ -191,7 +233,7 @@
       <div id="status">模型初始化中…</div>
 
       <div class="note">
-        每约 12 秒自动识别一次；课堂期间请保持页面在前台，尽量不要锁屏。
+        每约 20 秒自动识别一次；课堂期间请保持页面在前台，尽量不要锁屏。
       </div>
 
       <div class="session-actions">
@@ -200,6 +242,11 @@
       </div>
     </section>
 
+    <div class="pager">
+      <button id="prevPage" disabled>上一页</button>
+      <span id="pageInfo">1 / 1</span>
+      <button id="nextPage" disabled>下一页</button>
+    </div>
     <section id="transcript" class="transcript">
       <div class="empty">课堂文字会出现在这里</div>
     </section>

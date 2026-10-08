@@ -1,3 +1,9 @@
+document.getElementById('backToHome').addEventListener('click', (e) => {
+  if (recording || processing || queue.length) {
+    e.preventDefault();
+    alert('正在录音或识别，请先结束记录再返回，避免丢失最后一段文字。');
+  }
+});
 const startBtn = document.getElementById('startBtn');
 const markBtn = document.getElementById('markBtn');
 const finishBtn = document.getElementById('finishBtn');
@@ -11,7 +17,7 @@ const newBtn = document.getElementById('newBtn');
 const exportBtn = document.getElementById('exportBtn');
 
 const SAMPLE_RATE = 16000;
-const CHUNK_SECONDS = 12;
+const CHUNK_SECONDS = 20;
 const OVERLAP_SECONDS = 1.5;
 const MIN_SEGMENT_SECONDS = 1.2;
 
@@ -36,6 +42,13 @@ let queue = [];
 let processing = false;
 
 let segments = [];
+
+const PAGE_SIZE = 20;
+let currentPage = 0;
+
+const prevPageBtn = document.getElementById('prevPage');
+const nextPageBtn = document.getElementById('nextPage');
+const pageInfoEl = document.getElementById('pageInfo');
 let previousRawText = '';
 
 let accumulatedMs = 0;
@@ -218,6 +231,7 @@ function restoreDraft() {
 
     if (Array.isArray(draft.segments)) {
       segments = draft.segments;
+      currentPage = Math.max(0, Math.ceil(segments.length / PAGE_SIZE) - 1);
     }
 
     if (draft.course) {
@@ -234,43 +248,74 @@ function restoreDraft() {
   }
 }
 
-function renderTranscript() {
+function updatePager() {
+  const totalPages = Math.max(
+    1,
+    Math.ceil(segments.length / PAGE_SIZE)
+  );
+
+  currentPage = Math.max(
+    0,
+    Math.min(currentPage, totalPages - 1)
+  );
+
+  pageInfoEl.textContent =
+    `${currentPage + 1} / ${totalPages} · ${segments.length} 段`;
+
+  prevPageBtn.disabled = currentPage === 0;
+  nextPageBtn.disabled = currentPage >= totalPages - 1;
   exportBtn.disabled = segments.length === 0;
-
-  if (!segments.length) {
-    transcriptEl.innerHTML =
-      '<div class="empty">课堂文字会出现在这里</div>';
-    return;
-  }
-
-  transcriptEl.innerHTML = '';
-
-  for (const item of segments) {
-    const row = document.createElement('div');
-
-    row.className =
-      'line' + (item.important ? ' important' : '');
-
-    const time = document.createElement('div');
-    time.className = 'time';
-    time.textContent = item.time;
-
-    const text = document.createElement('div');
-    text.className = 'text';
-    text.textContent = item.text;
-
-    row.appendChild(time);
-    row.appendChild(text);
-
-    transcriptEl.appendChild(row);
-  }
-
-  window.scrollTo({
-    top: document.body.scrollHeight,
-    behavior: 'smooth'
-  });
 }
 
+function createTranscriptRow(item) {
+  const row = document.createElement('div');
+  row.className = 'line' + (item.important ? ' important' : '');
+
+  const time = document.createElement('div');
+  time.className = 'time';
+  time.textContent = item.time;
+
+  const text = document.createElement('div');
+  text.className = 'text';
+  text.textContent = item.text;
+
+  row.append(time, text);
+  return row;
+}
+
+function renderTranscript() {
+  updatePager();
+
+  const fragment = document.createDocumentFragment();
+
+  const visible = segments.slice(
+    currentPage * PAGE_SIZE,
+    (currentPage + 1) * PAGE_SIZE
+  );
+
+  if (!visible.length) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.textContent = '课堂文字会出现在这里';
+    fragment.appendChild(empty);
+  } else {
+    for (const item of visible) {
+      fragment.appendChild(createTranscriptRow(item));
+    }
+  }
+
+  transcriptEl.replaceChildren(fragment);
+}
+
+prevPageBtn.onclick = function() {
+  currentPage--;
+  renderTranscript();
+};
+
+nextPageBtn.onclick = function() {
+  currentPage++;
+  renderTranscript();
+};
 function addResult(rawText, time) {
   const raw = String(rawText || '').trim();
   if (!raw) return;
@@ -281,14 +326,34 @@ function addResult(rawText, time) {
 
   if (!cleaned) return;
 
-  segments.push({
+  const previousCount = segments.length;
+  const wasLatestPage = currentPage === Math.max(
+    0,
+    Math.ceil(previousCount / PAGE_SIZE) - 1
+  );
+
+  const item = {
     time,
     text: cleaned,
     important: false
-  });
+  };
 
+  segments.push(item);
   saveDraft();
-  renderTranscript();
+
+  if (wasLatestPage) {
+    const latestPage = Math.ceil(segments.length / PAGE_SIZE) - 1;
+
+    if (currentPage !== latestPage || previousCount === 0) {
+      currentPage = latestPage;
+      renderTranscript();
+    } else {
+      transcriptEl.appendChild(createTranscriptRow(item));
+      updatePager();
+    }
+  } else {
+    updatePager();
+  }
 }
 
 async function processQueue() {
@@ -438,8 +503,6 @@ async function beginRecording() {
 
   if (!started) {
     started = true;
-    accumulatedMs = 0;
-    segments = [];
     previousRawText = '';
     chunks = [];
     bufferedSamples = 0;
@@ -760,6 +823,7 @@ newBtn.onclick = async function() {
   processing = false;
 
   segments = [];
+  currentPage = 0;
   previousRawText = '';
 
   accumulatedMs = 0;

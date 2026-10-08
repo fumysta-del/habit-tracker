@@ -203,13 +203,19 @@ function App() {
         try {
           const trResult = await supabase.from("time_records").select("*");
           if (trResult.data && trResult.data.length > 0) {
-            setTimeRecords(trResult.data.map((r: any) => ({
-              id: r.id,
-              type: r.type,
-              startTime: r.start_time,
-              endTime: r.end_time,
-              duration: r.duration,
-            })));
+            setTimeRecords((prev) => {
+              const merged = new Map(prev.map((r) => [r.id, r]));
+              for (const r of trResult.data) {
+                merged.set(r.id, {
+                  id: r.id,
+                  type: r.type,
+                  startTime: r.start_time,
+                  endTime: r.end_time,
+                  duration: r.duration,
+                });
+              }
+              return Array.from(merged.values());
+            });
           }
           console.log("[SYNC] cloud time_records", trResult.data?.length ?? 0, "records");
         } catch (e) { console.error("[SYNC] time_records load failed:", e); }
@@ -260,6 +266,21 @@ function App() {
        updatedAt: "",
     };
     saveData(newData);
+    // Flush only records that are now saved locally or intentionally deduplicated.
+    try {
+      const key = "treeclock-pending-sessions-v1";
+      const value = localStorage.getItem(key);
+      if (value) {
+        const queue = JSON.parse(value);
+        if (Array.isArray(queue)) {
+          const saved = new Set(timeRecords.map((r) => r.id));
+          const skippedRaw = JSON.parse(localStorage.getItem("treeclock-skipped-session-ids-v1") || "[]");
+          const skipped = new Set(Array.isArray(skippedRaw) ? skippedRaw : []);
+          const remaining = queue.filter((r) => !saved.has(r.id) && !skipped.has(r.id));
+          if (remaining.length !== queue.length) localStorage.setItem(key, JSON.stringify(remaining));
+        }
+      }
+    } catch (error) { console.warn("Treeclock 待同步记录清理失败", error); }
     if (!cloudReady) return;
     if (!initialSyncDone.current) { initialSyncDone.current = true; }
     console.log("[SYNC] Syncing - xp:", xp, "tasks:", tasks.length, "records:", Object.keys(dailyRecords).length);
@@ -458,6 +479,66 @@ const doMinimalAction = (action: string) => {
       return prev;
     });
   };
+  // Treeclock: only completed work sessions enter the existing 学习 time records.
+  const [treeclockSignal, setTreeclockSignal] = useState(0);
+  useEffect(() => {
+    const handleStorage = (ev: StorageEvent) => {
+      if (ev.key === "treeclock-pending-sessions-v1") setTreeclockSignal((n) => n + 1);
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
+  useEffect(() => {
+    if (!cloudReady) return;
+    const queueKey = "treeclock-pending-sessions-v1";
+    const skippedKey = "treeclock-skipped-session-ids-v1";
+    try {
+      const raw = JSON.parse(localStorage.getItem(queueKey) || "[]");
+      if (!Array.isArray(raw) || !raw.length) return;
+      const skippedRaw = JSON.parse(localStorage.getItem(skippedKey) || "[]");
+      const skipped = new Set<number>(Array.isArray(skippedRaw) ? skippedRaw : []);
+      const known = new Set(timeRecords.map((r) => r.id));
+      const accepted: TimeRecord[] = [];
+      let skipChanged = false;
+      for (const value of raw) {
+        if (!value || !Number.isSafeInteger(value.id) || known.has(value.id) || skipped.has(value.id)) continue;
+        if (value.type !== "学习" || !Number.isInteger(value.duration) || value.duration < 1 || value.duration > 120) continue;
+        const start = Date.parse(value.startTime);
+        const end = Date.parse(value.endTime);
+        if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) continue;
+        // The manual study timer already counts this time; do not count a second time.
+        const hasOverlap = [...timeRecords, ...accepted].some((r) => {
+          if (r.type !== "学习") return false;
+          const rs = Date.parse(r.startTime);
+          const re = r.endTime ? Date.parse(r.endTime) : Date.now();
+          return Number.isFinite(rs) && Number.isFinite(re) && rs < end && re > start;
+        });
+        if (hasOverlap) {
+          skipped.add(value.id);
+          skipChanged = true;
+          continue;
+        }
+        accepted.push({
+          id: value.id, type: "学习",
+          startTime: value.startTime,
+          endTime: value.endTime,
+          duration: value.duration,
+        });
+        known.add(value.id);
+      }
+      if (skipChanged) localStorage.setItem(skippedKey, JSON.stringify([...skipped]));
+      if (accepted.length) {
+        setTimeRecords((prev) => {
+          const ids = new Set(prev.map((r) => r.id));
+          const incoming = accepted.filter((r) => !ids.has(r.id));
+          return incoming.length ? [...prev, ...incoming] : prev;
+        });
+      }
+    } catch (error) {
+      console.error("Treeclock 学习记录导入失败", error);
+    }
+  }, [cloudReady, timeRecords, treeclockSignal]);
   // Action Evaluation handlers
   const handleEvaluateAction = (text: string) => {
     const result = evaluateAction(text);
