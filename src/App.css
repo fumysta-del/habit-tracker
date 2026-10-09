@@ -2155,3 +2155,31 @@
   font-size: var(--font-size-small);
   color: var(--color-text-tertiary);
 }
+
+/* menu-svg-alignment-v2 */
+.hamburger-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hamburger-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  line-height: 1;
+}
+
+.hamburger-item-icon svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.hamburger-item-label {
+  display: block;
+  line-height: 24px;
+}
